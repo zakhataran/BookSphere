@@ -1,0 +1,74 @@
+server:
+  port: 8081
+
+spring:
+  flyway:
+    enabled: true
+    create-schema: true
+    baseline-on-migrate: true
+    default-schema: book_sphere
+    locations: classpath:db.migration
+
+  datasource:
+    url: jdbc:postgresql://localhost:5433/booksphere
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+      database-platform: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false
+    properties:
+      hibernate:
+        default_schema: book_sphere
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+  redis:
+    verification:
+      ttl-minutes: 2
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8080/realms/BookSphere
+          jwk-set-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}/protocol/openid-connect/certs
+
+  keycloak:
+    rest:
+      realm: BookSphere
+      client-id: booksphere-rest-api
+      client-secret: 7OJNdX4lOrI70qv3BnzRGDHxWLx2LipV
+      token-uri: http://localhost:8080
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: book.sphere.api@gmail.com
+    password: wwso vcoa rpsy akew
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 110MB
+
+minio:
+#  url: http://minio:9000
+  url: http://localhost:9000
+  accessKey: admin
+  secretKey: password
+  bucket-name: user-image-bucket
+  secure: false
+
+book:
+  upload:
+    min-size: 1MB
+    max-size: 100MB

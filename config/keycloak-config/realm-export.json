@@ -1,0 +1,152 @@
+{
+  "realm": "BookSphere",
+  "enabled": true,
+  "accessTokenLifespan": 300,
+  "accessCodeLifespan": 60,
+  "accessCodeLifespanUserAction": 300,
+  "sslRequired": "external",
+  "userManagedAccessAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "editUsernameAllowed": false,
+  "resetPasswordAllowed": false,
+  "users": [
+    {
+      "id": "c0107362-ea80-4374-aefb-c42c6aaccb1c",
+      "username": "admin",
+      "email": "admin@booksphere.com",
+      "firstName": "Admin",
+      "lastName": "Admin",
+      "enabled": true,
+      "emailVerified": true,
+      "createdTimestamp": 1764707903200,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "12344321",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "user",
+        "admin"
+      ]
+    },
+    {
+      "id": "1b4268dc-0961-4286-a0ee-93f1776e2b81",
+      "username": "user",
+      "email": "user@booksphere.com",
+      "firstName": "User",
+      "lastName": "Simple",
+      "enabled": true,
+      "emailVerified": true,
+      "createdTimestamp": 1764707903200,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "12344321",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "user"
+      ]
+    },
+    {
+      "username": "service-account-booksphere-rest-api",
+      "enabled": true,
+      "serviceAccountClientId": "booksphere-rest-api",
+      "realmRoles": [ "default-roles-booksphere-rest-api" ],
+      "clientRoles": { "realm-management": [ "realm-admin", "manage-users", "assign-role", "view-users", "query-users" ] }
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "booksphere-rest-api",
+      "enabled": true,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "7OJNdX4lOrI70qv3BnzRGDHxWLx2LipV",
+      "redirectUris": [
+        "http://localhost:8081/*"
+      ],
+      "webOrigins": [
+        "*"
+      ],
+      "publicClient": false,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": true,
+      "fullScopeAllowed": true,
+      "defaultClientScopes": [
+        "openid",
+        "profile",
+        "email",
+        "roles"
+      ],
+      "protocolMappers": [
+        {
+          "name": "admin-audience-mapper",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.client.audience": "realm-management",
+            "access.token.claim": "true",
+            "id.token.claim": "false"
+          }
+        }
+      ]
+    }
+  ],
+  "roles": {
+    "realm": [
+      {
+        "name": "admin",
+        "description": "Admin role",
+        "composite": false
+      },
+      {
+        "name": "user",
+        "description": "Standard user role",
+        "composite": false
+      },
+      {
+        "name": "offline_access",
+        "composite": false
+      },
+      {
+        "name": "uma_authorization",
+        "composite": false
+      },
+      {
+        "name": "default-roles-booksphere-rest-api",
+        "composite": true,
+        "composites": {
+          "realm": [ "offline_access", "uma_authorization" ]
+        }
+      }
+    ]
+  },
+  "clientScopes": [
+    {
+      "name": "roles",
+      "protocol": "openid-connect",
+      "protocolMappers": [
+        {
+          "name": "roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "multivalued": "true",
+            "userinfo.token.claim": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "roles",
+            "jsonType.label": "String"
+          }
+        }
+      ]
+    }
+  ]
+}

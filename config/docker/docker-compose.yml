@@ -1,0 +1,85 @@
+name: BookSphere
+services:
+  book-sphere-data-base:
+    image: postgres:16.1
+    container_name: book-sphere-data-base
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: booksphere
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../keycloak-config/keycloak-init-schema.sql:/docker-entrypoint-initdb.d/01-keycloak.sql
+    command: ["postgres", "-c", "max_connections=200"]
+    networks:
+      - BookSphere
+
+  keycloak:
+    image: quay.io`/keycloak/keycloak:26.2.5
+    container_name: keycloak
+    depends_on:
+      - book-sphere-data-base
+    ports:
+      - "8080:8080"
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: "admin"
+      KC_BOOTSTRAP_ADMIN_PASSWORD: "admin"
+      KC_DB: "postgres"
+      KC_DB_USERNAME: "postgres"
+      KC_DB_PASSWORD: "postgres"
+      KC_DB_URL: "jdbc:postgresql://book-sphere-data-base:5432/booksphere"
+      KC_ADMIN_URL: "http://127.0.0.1:8080"
+      KC_DB_SCHEMA: keycloak_schema
+    volumes:
+      - ../keycloak-config:/opt/keycloak/data/import
+    command:
+      - start-dev
+      - --import-realm
+    restart: unless-stopped
+    networks:
+      - BookSphere
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    environment:
+      ALLOW_EMPTY_PASSWORD: yes
+      REDIS_DISABLE_COMMANDS: FLUSHDB,FLUSHALL
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    restart: always
+    networks:
+      - BookSphere
+
+  minio:
+    image: quay.io/minio/minio
+    container_name: minio
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: password
+    volumes:
+      - minio_data:/data
+    ports:
+      - "9000:9000"
+      - "9090:9090"
+    command: server /data --console-address ":9090"
+    restart: always
+    networks:
+      - BookSphere
+
+volumes:
+  consul_data:
+    driver: local
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  minio_data:
+
+networks:
+  BookSphere:
+    driver: bridge

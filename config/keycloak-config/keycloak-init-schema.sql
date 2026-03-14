@@ -1,0 +1,3 @@
+CREATE SCHEMA IF NOT EXISTS keycloak_schema;
+GRANT ALL PRIVILEGES ON SCHEMA keycloak_schema TO postgres;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA keycloak_schema TO postgres;

@@ -1,0 +1,2 @@
+ALTER TABLE IF EXISTS book_sphere.book
+ADD COLUMN book_url VARCHAR(255);
