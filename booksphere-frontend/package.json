@@ -12,9 +12,11 @@
     "test": "vitest run",
     "lint": "eslint",
     "format": "prettier --check .",
-    "check": "prettier --write . && eslint --fix"
+    "check": "prettier --write . && eslint --fix",
+    "generate-api": "openapi-ts --input http://localhost:8081/v3/api-docs --output ./src/api --client @hey-api/client-fetch"
   },
   "dependencies": {
+    "@hey-api/client-fetch": "^0.13.1",
     "@tailwindcss/vite": "^4.1.18",
     "@tanstack/react-devtools": "latest",
     "@tanstack/react-router": "latest",
@@ -25,9 +27,11 @@
     "lucide-react": "^0.545.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "tailwindcss": "^4.1.18"
+    "tailwindcss": "^4.1.18",
+    "zustand": "^5.0.12"
   },
   "devDependencies": {
+    "@hey-api/openapi-ts": "^0.94.4",
     "@tailwindcss/typography": "^0.5.16",
     "@tanstack/devtools-vite": "latest",
     "@tanstack/eslint-config": "latest",

@@ -17,7 +17,7 @@ services:
       - BookSphere
 
   keycloak:
-    image: quay.io`/keycloak/keycloak:26.2.5
+    image: quay.io/keycloak/keycloak:26.2.5
     container_name: keycloak
     depends_on:
       - book-sphere-data-base
