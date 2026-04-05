@@ -1,23 +1,38 @@
-import * as React from 'react';
-import { Outlet, createRootRoute, HeadContent, Scripts } from '@tanstack/react-router';
-
+import { Outlet, createRootRoute } from '@tanstack/react-router';
+import { Box, Container } from '@mui/material';
 export const Route = createRootRoute({
   component: RootComponent,
 });
 
 function RootComponent() {
   return (
-    <html lang="en">
-      <head>
-        <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>BookSphere</title>
-        <HeadContent />
-      </head>
-      <body>
+    <Box
+      sx={{
+        backgroundColor: 'background.default',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        position: 'relative',
+      }}
+    >
+      <Container
+        maxWidth="md"
+        sx={{
+          pt: { xs: '64px' },
+          '@media (min-width:1400px)': {
+            pt: 0,
+          },
+          flexGrow: 1,
+          pb: 4,
+          mt: '25px',
+          maxWidth: '1400px',
+          display: 'block',
+          justifyContent: 'initial',
+          alignItems: 'initial',
+        }}
+      >
         <Outlet />
-        <Scripts />
-      </body>
-    </html>
+      </Container>
+    </Box>
   );
 }

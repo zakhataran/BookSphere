@@ -1,5 +1,6 @@
 package org.project.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.project.dto.LoginDto;
 import org.project.dto.LoginResponse;
@@ -19,14 +20,14 @@ public class AuthController {
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/registration")
-    public ResponseEntity<UserReadDto> registration(@RequestBody UserCreateDto newUser) {
+    public ResponseEntity<UserReadDto> registration(@RequestBody @Valid UserCreateDto newUser) {
         UserReadDto user = authService.create(newUser);
 
         return ResponseEntity.ok(user);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@RequestBody LoginDto loginDto) {
+    public ResponseEntity<LoginResponse> login(@RequestBody @Valid LoginDto loginDto) {
         return ResponseEntity.ok(authService.login(loginDto));
     }
 
