@@ -27,7 +27,7 @@ public class BookController {
 
     @PatchMapping("/update-book-status/{bookId}")
     @ResponseStatus(HttpStatus.OK)
-    public void updateBookStatus(@PathVariable("bookId") String bookId, @RequestBody BookProgressUpdateDto bookProgressUpdateDto) {
+    public void updateBookStatus(@PathVariable("bookId") String bookId, @RequestBody @Valid BookProgressUpdateDto bookProgressUpdateDto) {
         bookService.updateBookProgress(UUID.fromString(bookId), bookProgressUpdateDto);
     }
 

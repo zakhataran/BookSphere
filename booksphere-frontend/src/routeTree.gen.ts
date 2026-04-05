@@ -9,12 +9,15 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as LoginRouteImport } from './routes/login'
+import { Route as HomeRouteRouteImport } from './routes/home/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthLoginRouteImport } from './routes/auth/login'
+import { Route as HomeProfileRouteRouteImport } from './routes/home/profile/route'
+import { Route as HomeProfileIndexRouteImport } from './routes/home/profile/index'
 
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
+const HomeRouteRoute = HomeRouteRouteImport.update({
+  id: '/home',
+  path: '/home',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -22,40 +25,70 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthLoginRoute = AuthLoginRouteImport.update({
+  id: '/auth/login',
+  path: '/auth/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HomeProfileRouteRoute = HomeProfileRouteRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => HomeRouteRoute,
+} as any)
+const HomeProfileIndexRoute = HomeProfileIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => HomeProfileRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/login': typeof LoginRoute
+  '/home': typeof HomeRouteRouteWithChildren
+  '/home/profile': typeof HomeProfileRouteRouteWithChildren
+  '/auth/login': typeof AuthLoginRoute
+  '/home/profile/': typeof HomeProfileIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/login': typeof LoginRoute
+  '/home': typeof HomeRouteRouteWithChildren
+  '/auth/login': typeof AuthLoginRoute
+  '/home/profile': typeof HomeProfileIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/login': typeof LoginRoute
+  '/home': typeof HomeRouteRouteWithChildren
+  '/home/profile': typeof HomeProfileRouteRouteWithChildren
+  '/auth/login': typeof AuthLoginRoute
+  '/home/profile/': typeof HomeProfileIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login'
+  fullPaths: '/' | '/home' | '/home/profile' | '/auth/login' | '/home/profile/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login'
-  id: '__root__' | '/' | '/login'
+  to: '/' | '/home' | '/auth/login' | '/home/profile'
+  id:
+    | '__root__'
+    | '/'
+    | '/home'
+    | '/home/profile'
+    | '/auth/login'
+    | '/home/profile/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  LoginRoute: typeof LoginRoute
+  HomeRouteRoute: typeof HomeRouteRouteWithChildren
+  AuthLoginRoute: typeof AuthLoginRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
+    '/home': {
+      id: '/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof HomeRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -65,12 +98,57 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth/login': {
+      id: '/auth/login'
+      path: '/auth/login'
+      fullPath: '/auth/login'
+      preLoaderRoute: typeof AuthLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/home/profile': {
+      id: '/home/profile'
+      path: '/profile'
+      fullPath: '/home/profile'
+      preLoaderRoute: typeof HomeProfileRouteRouteImport
+      parentRoute: typeof HomeRouteRoute
+    }
+    '/home/profile/': {
+      id: '/home/profile/'
+      path: '/'
+      fullPath: '/home/profile/'
+      preLoaderRoute: typeof HomeProfileIndexRouteImport
+      parentRoute: typeof HomeProfileRouteRoute
+    }
   }
 }
 
+interface HomeProfileRouteRouteChildren {
+  HomeProfileIndexRoute: typeof HomeProfileIndexRoute
+}
+
+const HomeProfileRouteRouteChildren: HomeProfileRouteRouteChildren = {
+  HomeProfileIndexRoute: HomeProfileIndexRoute,
+}
+
+const HomeProfileRouteRouteWithChildren =
+  HomeProfileRouteRoute._addFileChildren(HomeProfileRouteRouteChildren)
+
+interface HomeRouteRouteChildren {
+  HomeProfileRouteRoute: typeof HomeProfileRouteRouteWithChildren
+}
+
+const HomeRouteRouteChildren: HomeRouteRouteChildren = {
+  HomeProfileRouteRoute: HomeProfileRouteRouteWithChildren,
+}
+
+const HomeRouteRouteWithChildren = HomeRouteRoute._addFileChildren(
+  HomeRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  LoginRoute: LoginRoute,
+  HomeRouteRoute: HomeRouteRouteWithChildren,
+  AuthLoginRoute: AuthLoginRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

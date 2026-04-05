@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useAuthStore } from '../store/authStore';
+import { useAuthStore } from '../store/authStore.ts';
 import { useEffect } from 'react';
 
 export const Route = createFileRoute('/')({
@@ -15,7 +15,7 @@ function IndexPage() {
     console.log('Autherization status: ', isAuthenticated);
 
     if (!isAuthenticated) {
-      navigate({ to: '/login' });
+      navigate({ to: '/auth/login' });
     }
   }, [isAuthenticated, navigate]);
 
