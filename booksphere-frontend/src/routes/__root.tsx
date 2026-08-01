@@ -1,38 +1,27 @@
 import { Outlet, createRootRoute } from '@tanstack/react-router';
-import { Box, Container } from '@mui/material';
+import { Box, CssBaseline } from '@mui/material';
+import '../api/config';
+
 export const Route = createRootRoute({
   component: RootComponent,
 });
 
 function RootComponent() {
   return (
-    <Box
-      sx={{
-        backgroundColor: 'background.default',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        position: 'relative',
-      }}
-    >
-      <Container
-        maxWidth="md"
+    <>
+      <CssBaseline />
+      
+      <Box
         sx={{
-          pt: { xs: '64px' },
-          '@media (min-width:1400px)': {
-            pt: 0,
-          },
-          flexGrow: 1,
-          pb: 4,
-          mt: '25px',
-          maxWidth: '1400px',
-          display: 'block',
-          justifyContent: 'initial',
-          alignItems: 'initial',
+          backgroundColor: '#F6F4F1',
+          display: 'flex',
+          flexDirection: 'column',
+          minHeight: '100vh',
+          width: '100%',
         }}
       >
         <Outlet />
-      </Container>
-    </Box>
+      </Box>
+    </>
   );
 }

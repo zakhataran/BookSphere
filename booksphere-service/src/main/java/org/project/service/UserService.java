@@ -9,11 +9,17 @@ public interface UserService {
 
     void changePersonalData(UserEditDto userEditDto);
 
+    void uploadAvatar(ImageUploadDto imageUploadDto);
+
     void sendVerificationMail(String userEmail);
 
     void handleUserVerification(String code);
 
     LoginResponse changePassword(ChangePasswordDto changePasswordDto);
+
+    void initiatePasswordReset(String email);
+
+    void resetPassword(ResetPasswordDto resetPasswordDto);
 
     void deleteAccount(UserDeleteDto userDeleteDto);
 

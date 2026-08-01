@@ -18,6 +18,7 @@ import org.project.exceptions.MailSendException;
 import org.project.exceptions.UserNotFoundException;
 import org.project.mapper.UserMapper;
 import org.project.service.AuthService;
+import org.project.service.MinioService;
 import org.project.service.RedisService;
 import org.project.service.UserService;
 import org.project.util.CodeGeneratorUtils;
@@ -33,7 +34,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -52,6 +52,7 @@ public class UserServiceImpl implements UserService {
     private final CodeGeneratorUtils codeGeneratorUtils;
     private final RedisService redisService;
     private final AuthService authService;
+    private final MinioService minioService;
 
     @Override
     @Transactional
@@ -78,13 +79,6 @@ public class UserServiceImpl implements UserService {
             hasAnyDataChanged = true;
         }
 
-        if (!user.getEmail().equals(userEditDto.email())) {
-            user.setEmail(userEditDto.email());
-            user.setIsVerified(Boolean.FALSE);
-            userRepresentation.setEmail(userEditDto.email());
-            hasAnyDataChanged = true;
-        }
-
         if (hasAnyDataChanged) {
             try {
                 userResource.update(userRepresentation);
@@ -99,19 +93,24 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
+    public void uploadAvatar(ImageUploadDto imageUploadDto) {
+        minioService.uploadImage(imageUploadDto);
+    }
+
+    @Override
     @Async
     public void sendVerificationMail(String userEmail) {
         String code = codeGeneratorUtils.generateCode();
 
         try {
-            redisService.saveVerificationCode(userEmail, code);
-
             SimpleMailMessage message = new SimpleMailMessage();
             message.setTo(userEmail);
             message.setSubject("Verify BookSphere account");
             message.setText("Your code is:\n" + code + "\n\nThis code is valid during 2 minutes");
 
             mailSender.send(message);
+            redisService.saveVerificationCode(userEmail, code);
             log.info("Verification mail sent to {}", userEmail);
         } catch (Exception e) {
             log.error("Failed to send verification mail to {}", userEmail);
@@ -121,6 +120,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @SneakyThrows
+    @Transactional
     public void handleUserVerification(String code) {
         String userEmail = securityConfig.getSecurityContext();
         boolean isCodeValid = redisService.verifyAndClear(userEmail, code);
@@ -135,7 +135,7 @@ public class UserServiceImpl implements UserService {
 
         if (Boolean.TRUE.equals(user.getIsVerified())) {
             log.warn("User {} is already verified", user.getUsername());
-            return;
+             throw new RuntimeException("User " + user.getUsername() + " is already verified");
         }
 
         user.setIsVerified(Boolean.TRUE);
@@ -183,6 +183,64 @@ public class UserServiceImpl implements UserService {
 
         LoginDto loginDto = new LoginDto(userEmail, newPassword);
         return authService.login(loginDto);
+    }
+
+    @Override
+    @Async
+    public void initiatePasswordReset(String email) {
+        userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("User with email: " + email + " not found"));
+
+        String code = codeGeneratorUtils.generateCode();
+
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(email);
+            message.setSubject("Reset your BookSphere Password");
+            message.setText("You password reset code is:\n" + code + "\n\nThis code is valid for 2 minutes.");
+
+            mailSender.send(message);
+            redisService.saveVerificationCode(email, code);
+
+            log.info("Password reset email sent to {}", email);
+        } catch (Exception e) {
+            log.error("Failed to send password reset mail to {}", email);
+            throw new MailSendException("Failed to initiate password reset\n" + e);
+        }
+    }
+
+    @Override
+    public void resetPassword(ResetPasswordDto resetPasswordDto) {
+        if (!resetPasswordDto.newPassword().equals(resetPasswordDto.confirmPassword())) {
+            throw new IllegalArgumentException("Passwords do not match");
+        }
+
+        boolean isCodeValid = redisService.verifyAndClear(resetPasswordDto.email(), resetPasswordDto.code());
+        if (!isCodeValid) {
+            log.warn("Password reset failed for {}: Invalid or expired code", resetPasswordDto.email());
+            throw new IllegalArgumentException("Invalid or expired code");
+        }
+
+        User user = userRepository.findByEmail(resetPasswordDto.email())
+                .orElseThrow(() -> new UserNotFoundException("User with email: " + resetPasswordDto.email() + " not found"));
+
+        try {
+            UserResource userResource = keycloak.realm(realm).users().get(user.getId().toString());
+            CredentialRepresentation passwordCredential = new CredentialRepresentation();
+            passwordCredential.setTemporary(Boolean.FALSE);
+            passwordCredential.setType(CredentialRepresentation.PASSWORD);
+            passwordCredential.setValue(resetPasswordDto.newPassword());
+
+            userResource.resetPassword(passwordCredential);
+
+            log.info("Password successfully reset for user: {}", user.getUsername());
+        } catch (Exception e) {
+            log.error("Failed to reset password in Keycloak: {}", e.getMessage());
+            throw new KeycloakBadRequestException("Failed to reset password in Keycloak");
+        }
+
+        user.setUpdatedAt(LocalDateTime.now());
+        userRepository.save(user);
     }
 
     @Override
@@ -235,10 +293,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public PageDto<UserReadDto> searchUser(String username, int page, int size) {
-        String searchPattern = username + "%";
+    public PageDto<UserReadDto> searchUser(String query, int page, int size) {
+        String userEmail = securityConfig.getSecurityContext();
 
-        Page<User> users = userRepository.findUserByUsernameLikeIgnoreCase(searchPattern, PageRequest.of(page, size));
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new UserNotFoundException("User with email: " + userEmail + " not found"));
+
+
+        Page<User> users = userRepository.searchUsers(user.getId(), query, PageRequest.of(page, size));
 
         return new PageDto<>(
                 userMapper.toUserReadDto(users.getContent()),

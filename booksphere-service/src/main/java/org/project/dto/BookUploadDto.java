@@ -7,7 +7,8 @@ public record BookUploadDto(
         @NotBlank
         String title,
         @NotBlank
-        String author,
+        String authorFirstName,
+        String authorSecondName,
         Long categoryId,
         MultipartFile file
 ) {}

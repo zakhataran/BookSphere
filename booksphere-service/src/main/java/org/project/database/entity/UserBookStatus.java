@@ -47,17 +47,4 @@ public class UserBookStatus {
     @UpdateTimestamp
     @Column(name = "updated_at")
     LocalDateTime updatedAt;
-
-//    @Transient
-//    public BigDecimal getReadPercentage() {
-//        if (bookMarkPage == null || book == null || book.getNumPages() == null || book.getNumPages() == 0) {
-//            return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
-//        }
-//
-//        BigDecimal percentage = BigDecimal.valueOf(bookMarkPage)
-//                .divide(BigDecimal.valueOf(book.getNumPages()), 4, RoundingMode.HALF_UP)
-//                .multiply(BigDecimal.valueOf(100));
-//
-//        return percentage.setScale(2, RoundingMode.HALF_UP);
-//    }
 }

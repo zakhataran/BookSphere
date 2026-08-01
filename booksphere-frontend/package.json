@@ -13,14 +13,16 @@
     "lint": "eslint",
     "format": "prettier --check .",
     "check": "prettier --write . && eslint --fix",
-    "generate-api": "openapi-ts --input http://localhost:8081/v3/api-docs --output ./src/api --client @hey-api/client-fetch"
+    "generate-api": "openapi-ts --input http://localhost:8081/v3/api-docs --output ./src/api/generated --client @hey-api/client-fetch"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@hey-api/client-fetch": "^0.13.1",
-    "@mui/icons-material": "^7.3.9",
+    "@hookform/resolvers": "^5.4.0",
+    "@mui/icons-material": "^7.3.11",
     "@mui/material": "^7.3.9",
+    "@stomp/stompjs": "^7.3.0",
     "@tailwindcss/vite": "^4.1.18",
     "@tanstack/react-devtools": "latest",
     "@tanstack/react-router": "latest",
@@ -32,8 +34,12 @@
     "lucide-react": "^0.545.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-hook-form": "^7.76.1",
+    "react-pdf": "^10.4.1",
+    "sockjs-client": "^1.6.1",
     "sonner": "^2.0.7",
     "tailwindcss": "^4.1.18",
+    "zod": "^4.4.3",
     "zustand": "^5.0.12"
   },
   "devDependencies": {
@@ -46,6 +52,7 @@
     "@types/node": "^22.10.2",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
+    "@types/sockjs-client": "^1.5.4",
     "@vitejs/plugin-react": "^5.1.4",
     "jsdom": "^28.1.0",
     "prettier": "^3.8.1",

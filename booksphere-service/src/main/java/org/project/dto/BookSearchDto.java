@@ -6,5 +6,7 @@ public record BookSearchDto(
         UUID bookId,
         String title,
         String author,
-        String imageUrl
+        String imageUrl,
+        Long categoryId,
+        String uploaderUsername
 ) {}

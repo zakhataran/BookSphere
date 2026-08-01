@@ -2,14 +2,19 @@ package org.project.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.project.database.entity.enums.BookSortFilter;
+import org.project.dto.filter.BookFilter;
 import org.project.dto.*;
 import org.project.service.BookService;
+import org.project.service.CategoryService;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -18,11 +23,19 @@ import java.util.UUID;
 public class BookController {
 
     private final BookService bookService;
+    private final CategoryService categoryService;
 
     @PostMapping(value = "/upload-book", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public void uploadBook(@ModelAttribute @Valid BookUploadDto bookUploadDto) {
         bookService.uploadBook(bookUploadDto);
+    }
+
+    @PostMapping(value = "/preview-cover", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<Map<String, String>> previewCover(@RequestParam("file")MultipartFile file) {
+        String base64Cover = bookService.extractCoverBase64(file);
+        return ResponseEntity.ok(Map.of("coverUrl", base64Cover));
     }
 
     @PatchMapping("/update-book-status/{bookId}")
@@ -53,18 +66,38 @@ public class BookController {
     }
 
     @GetMapping("/search-books")
-    public ResponseEntity<PageDto<BookSearchDto>> getBooks(@RequestParam("query") String query,
-                                                           @RequestParam("categoryId") Long categoryId,
-                                                           @RequestParam("sortFilter") String sortFilter,
+    public ResponseEntity<PageDto<BookSearchDto>> getBooks(@ParameterObject @ModelAttribute BookFilter filter,
                                                            @RequestParam(name = "page", defaultValue = "0") int page,
-                                                           @RequestParam(name = "size", defaultValue = "10") int size) {
-        PageDto<BookSearchDto> books = bookService.searchAndFilterBooks(query, categoryId, BookSortFilter.valueOf(sortFilter), page, size);
+                                                           @RequestParam(name = "size", defaultValue = "30") int size) {
+        PageDto<BookSearchDto> books = bookService.searchAndFilterBooks(filter, page, size);
         return ResponseEntity.ok(books);
     }
 
+    @GetMapping("/book-details/{bookId}")
+    public ResponseEntity<BookDetailsDto> getBookDetails(@PathVariable UUID bookId) {
+        BookDetailsDto bookDetailsDto = bookService.getBookDetails(bookId);
+        return ResponseEntity.ok(bookDetailsDto);
+    }
+
+    @GetMapping("/recent")
+    public ResponseEntity<PageDto<BookSearchDto>> getRecentBooks(@RequestParam(name = "page", defaultValue = "0") int page,
+                                                                 @RequestParam(name = "size", defaultValue = "10") int size) {
+        return ResponseEntity.ok(bookService.getRecentBook(page, size));
+    }
+
+    @GetMapping("/reading-list")
+    public ResponseEntity<PageDto<MyLibraryDto>> getMyReadingList(@RequestParam(name = "page", defaultValue = "0") int page,
+                                                                  @RequestParam(name = "size", defaultValue = "2") int size) {
+        return ResponseEntity.ok(bookService.getMyReadingList(page, size));
+    }
+
     @GetMapping("/read-book/{bookId}")
-    public ResponseEntity<String> readBook(@PathVariable("bookId") String bookId) {
-        String book = bookService.readBook(UUID.fromString(bookId));
-        return ResponseEntity.ok(book);
+    public ResponseEntity<ReadBookDto> readBook(@PathVariable("bookId") String bookId) {
+        return ResponseEntity.ok(bookService.readBook(UUID.fromString(bookId)));
+    }
+
+    @GetMapping("/categories")
+    public ResponseEntity<List<CategoryReadDto>> getAllCategories() {
+        return ResponseEntity.ok(categoryService.getAllCategories());
     }
 }

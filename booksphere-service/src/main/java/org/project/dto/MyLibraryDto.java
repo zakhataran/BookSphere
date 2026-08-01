@@ -8,7 +8,7 @@ import java.util.UUID;
 public record MyLibraryDto(
         UUID bookId,
         String title,
-        String author,
+        String authorFullName,
         String imageUrl,
         String categoryName,
         ReadingStatus readingStatus,

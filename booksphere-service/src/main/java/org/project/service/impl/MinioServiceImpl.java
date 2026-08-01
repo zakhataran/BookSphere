@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Slf4j
@@ -77,6 +78,7 @@ public class MinioServiceImpl implements MinioService {
                 ? minioUrl.replace(MINIO_INTERNAL_URL, MINIO_PUBLIC_URL) + "/" + bucket + "/" + objectName
                 : minioUrl + "/" + bucket + "/" + objectName);
 
+        user.setUpdatedAt(LocalDateTime.now());
         userRepository.save(user);
     }
 
@@ -161,7 +163,7 @@ public class MinioServiceImpl implements MinioService {
 
         for (Result<Item> result : results) {
             Item item = result.get();
-            if (item.objectName().startsWith("avatars/" + email)); {
+            if (item.objectName().startsWith("avatars/" + email)) {
                 return item.objectName();
             }
         }

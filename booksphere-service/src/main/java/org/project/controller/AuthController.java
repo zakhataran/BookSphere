@@ -2,10 +2,7 @@ package org.project.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.project.dto.LoginDto;
-import org.project.dto.LoginResponse;
-import org.project.dto.UserCreateDto;
-import org.project.dto.UserReadDto;
+import org.project.dto.*;
 import org.project.service.AuthService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,8 +29,8 @@ public class AuthController {
     }
 
     @PostMapping("/refresh-token")
-    public ResponseEntity<LoginResponse> refreshToken(@RequestParam("refresh_token") String refreshToken) {
-        LoginResponse response = authService.refresh(refreshToken);
+    public ResponseEntity<LoginResponse> refreshToken(@RequestBody RefreshTokenRequestDto requestDto) {
+        LoginResponse response = authService.refresh(requestDto.refreshToken());
         return ResponseEntity.ok(response);
     }
 }

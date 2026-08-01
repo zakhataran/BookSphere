@@ -4,6 +4,8 @@ import org.project.database.entity.Book;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -15,7 +17,11 @@ public interface BookRepository extends JpaRepository<Book, UUID>, JpaSpecificat
 
     List<Book> findBooksByUserId(UUID userId);
 
-    List<Book> findBooksByTitleContainingIgnoreCaseOrAuthorContainingIgnoreCase(String title, String author);
+    @Query("SELECT b FROM Book b WHERE " +
+            "LOWER(b.title) LIKE LOWER(CONCAT('%', :title, '%')) OR " +
+            "LOWER(b.authorFirstName) LIKE LOWER(CONCAT('%', :author, '%')) OR " +
+            "LOWER(b.authorSecondName) LIKE LOWER(CONCAT('%', :author, '%')) OR " +
+            "LOWER(CONCAT(b.authorFirstName, ' ', b.authorSecondName)) LIKE LOWER(CONCAT('%', :author, '%'))")
+    List<Book> searchByTitleOrAuthor(@Param("title")String title, @Param("author") String author);
 
-    Optional<Book> findBookById(UUID id);
 }

@@ -1,4 +1,4 @@
-package org.project.mapper;
+package org.project.mapper.helper;
 
 import org.mapstruct.Named;
 import org.project.database.entity.User;
@@ -9,6 +9,6 @@ public class UserMapperHelper {
 
     @Named("toFullName")
     public String fullName(User user) {
-        return user.getFirstName() + " " + user.getLastName();
+        return (user.getFirstName() + " " + user.getLastName()).trim();
     }
 }

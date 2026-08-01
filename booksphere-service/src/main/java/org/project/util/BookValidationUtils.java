@@ -1,14 +1,14 @@
 package org.project.util;
 
-import lombok.experimental.UtilityClass;
 import org.project.dto.BookUploadDto;
 import org.project.dto.FileMetadataDto;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 import org.springframework.util.unit.DataSize;
 
 import java.util.List;
 
-@UtilityClass
+@Component
 public final class BookValidationUtils {
 
     @Value("${book.upload.min-size}")
@@ -17,7 +17,7 @@ public final class BookValidationUtils {
     @Value("${book.upload.max-size}")
     private DataSize MAX_BOOK_SIZE;
 
-    public static void validateBookData(BookUploadDto bookUploadDto, FileMetadataDto fileMetadata) {
+    public void validateBookData(BookUploadDto bookUploadDto, FileMetadataDto fileMetadata) {
         long fileSize = bookUploadDto.file().getSize();
 
         if (fileSize < MIN_BOOK_SIZE.toBytes()) {
@@ -44,10 +44,15 @@ public final class BookValidationUtils {
         }
 
         List<String> ignoredAuthors = List.of("Author", "User", "Admin", "Administrator");
-        if (!fileMetadata.author().isEmpty()
-                && !ignoredAuthors.contains(fileMetadata.author())
-                && !bookUploadDto.author().equalsIgnoreCase(fileMetadata.author())) {
-            throw new IllegalArgumentException("Author entered does not match PDF metadata: " + fileMetadata.author());
+        if (!fileMetadata.author().isEmpty() && !ignoredAuthors.contains(fileMetadata.author())) {
+            String pdfAuthor = fileMetadata.author().trim();
+
+            String normalOrder = (bookUploadDto.authorFirstName() + " " + bookUploadDto.authorSecondName().trim());
+            String reverseOrder = (bookUploadDto.authorSecondName() + " " + bookUploadDto.authorFirstName().trim());
+
+            if (!normalOrder.equalsIgnoreCase(pdfAuthor) && !reverseOrder.equalsIgnoreCase(pdfAuthor)) {
+                throw new IllegalArgumentException("Author entered does not match PDF metadata: " + fileMetadata.author());
+            }
         }
     }
 }

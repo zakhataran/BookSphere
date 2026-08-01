@@ -11,9 +11,20 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as HomeRouteRouteImport } from './routes/home/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as HomeIndexRouteImport } from './routes/home/index'
+import { Route as HomeChatsRouteImport } from './routes/home/chats'
+import { Route as AuthRegisterRouteImport } from './routes/auth/register'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
+import { Route as AuthForgotPasswordRouteImport } from './routes/auth/forgot-password'
 import { Route as HomeProfileRouteRouteImport } from './routes/home/profile/route'
+import { Route as HomeUsersIndexRouteImport } from './routes/home/users/index'
 import { Route as HomeProfileIndexRouteImport } from './routes/home/profile/index'
+import { Route as HomeChatsIndexRouteImport } from './routes/home/chats/index'
+import { Route as HomeUsersUserIdRouteImport } from './routes/home/users/$userId'
+import { Route as HomeProfileUploadRouteImport } from './routes/home/profile/upload'
+import { Route as HomeChatsRecipientIdRouteImport } from './routes/home/chats/$recipientId'
+import { Route as HomeBookBookIdRouteImport } from './routes/home/book/$bookId'
+import { Route as HomeProfileReadBookIdRouteImport } from './routes/home/profile/read.$bookId'
 
 const HomeRouteRoute = HomeRouteRouteImport.update({
   id: '/home',
@@ -25,9 +36,29 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HomeIndexRoute = HomeIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => HomeRouteRoute,
+} as any)
+const HomeChatsRoute = HomeChatsRouteImport.update({
+  id: '/chats',
+  path: '/chats',
+  getParentRoute: () => HomeRouteRoute,
+} as any)
+const AuthRegisterRoute = AuthRegisterRouteImport.update({
+  id: '/auth/register',
+  path: '/auth/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthLoginRoute = AuthLoginRouteImport.update({
   id: '/auth/login',
   path: '/auth/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
+  id: '/auth/forgot-password',
+  path: '/auth/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HomeProfileRouteRoute = HomeProfileRouteRouteImport.update({
@@ -35,9 +66,44 @@ const HomeProfileRouteRoute = HomeProfileRouteRouteImport.update({
   path: '/profile',
   getParentRoute: () => HomeRouteRoute,
 } as any)
+const HomeUsersIndexRoute = HomeUsersIndexRouteImport.update({
+  id: '/users/',
+  path: '/users/',
+  getParentRoute: () => HomeRouteRoute,
+} as any)
 const HomeProfileIndexRoute = HomeProfileIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => HomeProfileRouteRoute,
+} as any)
+const HomeChatsIndexRoute = HomeChatsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => HomeChatsRoute,
+} as any)
+const HomeUsersUserIdRoute = HomeUsersUserIdRouteImport.update({
+  id: '/users/$userId',
+  path: '/users/$userId',
+  getParentRoute: () => HomeRouteRoute,
+} as any)
+const HomeProfileUploadRoute = HomeProfileUploadRouteImport.update({
+  id: '/upload',
+  path: '/upload',
+  getParentRoute: () => HomeProfileRouteRoute,
+} as any)
+const HomeChatsRecipientIdRoute = HomeChatsRecipientIdRouteImport.update({
+  id: '/$recipientId',
+  path: '/$recipientId',
+  getParentRoute: () => HomeChatsRoute,
+} as any)
+const HomeBookBookIdRoute = HomeBookBookIdRouteImport.update({
+  id: '/book/$bookId',
+  path: '/book/$bookId',
+  getParentRoute: () => HomeRouteRoute,
+} as any)
+const HomeProfileReadBookIdRoute = HomeProfileReadBookIdRouteImport.update({
+  id: '/read/$bookId',
+  path: '/read/$bookId',
   getParentRoute: () => HomeProfileRouteRoute,
 } as any)
 
@@ -45,41 +111,114 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/home': typeof HomeRouteRouteWithChildren
   '/home/profile': typeof HomeProfileRouteRouteWithChildren
+  '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
+  '/auth/register': typeof AuthRegisterRoute
+  '/home/chats': typeof HomeChatsRouteWithChildren
+  '/home/': typeof HomeIndexRoute
+  '/home/book/$bookId': typeof HomeBookBookIdRoute
+  '/home/chats/$recipientId': typeof HomeChatsRecipientIdRoute
+  '/home/profile/upload': typeof HomeProfileUploadRoute
+  '/home/users/$userId': typeof HomeUsersUserIdRoute
+  '/home/chats/': typeof HomeChatsIndexRoute
   '/home/profile/': typeof HomeProfileIndexRoute
+  '/home/users/': typeof HomeUsersIndexRoute
+  '/home/profile/read/$bookId': typeof HomeProfileReadBookIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/home': typeof HomeRouteRouteWithChildren
+  '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
+  '/auth/register': typeof AuthRegisterRoute
+  '/home': typeof HomeIndexRoute
+  '/home/book/$bookId': typeof HomeBookBookIdRoute
+  '/home/chats/$recipientId': typeof HomeChatsRecipientIdRoute
+  '/home/profile/upload': typeof HomeProfileUploadRoute
+  '/home/users/$userId': typeof HomeUsersUserIdRoute
+  '/home/chats': typeof HomeChatsIndexRoute
   '/home/profile': typeof HomeProfileIndexRoute
+  '/home/users': typeof HomeUsersIndexRoute
+  '/home/profile/read/$bookId': typeof HomeProfileReadBookIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/home': typeof HomeRouteRouteWithChildren
   '/home/profile': typeof HomeProfileRouteRouteWithChildren
+  '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
+  '/auth/register': typeof AuthRegisterRoute
+  '/home/chats': typeof HomeChatsRouteWithChildren
+  '/home/': typeof HomeIndexRoute
+  '/home/book/$bookId': typeof HomeBookBookIdRoute
+  '/home/chats/$recipientId': typeof HomeChatsRecipientIdRoute
+  '/home/profile/upload': typeof HomeProfileUploadRoute
+  '/home/users/$userId': typeof HomeUsersUserIdRoute
+  '/home/chats/': typeof HomeChatsIndexRoute
   '/home/profile/': typeof HomeProfileIndexRoute
+  '/home/users/': typeof HomeUsersIndexRoute
+  '/home/profile/read/$bookId': typeof HomeProfileReadBookIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/home' | '/home/profile' | '/auth/login' | '/home/profile/'
+  fullPaths:
+    | '/'
+    | '/home'
+    | '/home/profile'
+    | '/auth/forgot-password'
+    | '/auth/login'
+    | '/auth/register'
+    | '/home/chats'
+    | '/home/'
+    | '/home/book/$bookId'
+    | '/home/chats/$recipientId'
+    | '/home/profile/upload'
+    | '/home/users/$userId'
+    | '/home/chats/'
+    | '/home/profile/'
+    | '/home/users/'
+    | '/home/profile/read/$bookId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/home' | '/auth/login' | '/home/profile'
+  to:
+    | '/'
+    | '/auth/forgot-password'
+    | '/auth/login'
+    | '/auth/register'
+    | '/home'
+    | '/home/book/$bookId'
+    | '/home/chats/$recipientId'
+    | '/home/profile/upload'
+    | '/home/users/$userId'
+    | '/home/chats'
+    | '/home/profile'
+    | '/home/users'
+    | '/home/profile/read/$bookId'
   id:
     | '__root__'
     | '/'
     | '/home'
     | '/home/profile'
+    | '/auth/forgot-password'
     | '/auth/login'
+    | '/auth/register'
+    | '/home/chats'
+    | '/home/'
+    | '/home/book/$bookId'
+    | '/home/chats/$recipientId'
+    | '/home/profile/upload'
+    | '/home/users/$userId'
+    | '/home/chats/'
     | '/home/profile/'
+    | '/home/users/'
+    | '/home/profile/read/$bookId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   HomeRouteRoute: typeof HomeRouteRouteWithChildren
+  AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute
   AuthLoginRoute: typeof AuthLoginRoute
+  AuthRegisterRoute: typeof AuthRegisterRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -98,11 +237,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/home/': {
+      id: '/home/'
+      path: '/'
+      fullPath: '/home/'
+      preLoaderRoute: typeof HomeIndexRouteImport
+      parentRoute: typeof HomeRouteRoute
+    }
+    '/home/chats': {
+      id: '/home/chats'
+      path: '/chats'
+      fullPath: '/home/chats'
+      preLoaderRoute: typeof HomeChatsRouteImport
+      parentRoute: typeof HomeRouteRoute
+    }
+    '/auth/register': {
+      id: '/auth/register'
+      path: '/auth/register'
+      fullPath: '/auth/register'
+      preLoaderRoute: typeof AuthRegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth/login': {
       id: '/auth/login'
       path: '/auth/login'
       fullPath: '/auth/login'
       preLoaderRoute: typeof AuthLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/forgot-password': {
+      id: '/auth/forgot-password'
+      path: '/auth/forgot-password'
+      fullPath: '/auth/forgot-password'
+      preLoaderRoute: typeof AuthForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/home/profile': {
@@ -112,6 +279,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HomeProfileRouteRouteImport
       parentRoute: typeof HomeRouteRoute
     }
+    '/home/users/': {
+      id: '/home/users/'
+      path: '/users'
+      fullPath: '/home/users/'
+      preLoaderRoute: typeof HomeUsersIndexRouteImport
+      parentRoute: typeof HomeRouteRoute
+    }
     '/home/profile/': {
       id: '/home/profile/'
       path: '/'
@@ -119,26 +293,96 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HomeProfileIndexRouteImport
       parentRoute: typeof HomeProfileRouteRoute
     }
+    '/home/chats/': {
+      id: '/home/chats/'
+      path: '/'
+      fullPath: '/home/chats/'
+      preLoaderRoute: typeof HomeChatsIndexRouteImport
+      parentRoute: typeof HomeChatsRoute
+    }
+    '/home/users/$userId': {
+      id: '/home/users/$userId'
+      path: '/users/$userId'
+      fullPath: '/home/users/$userId'
+      preLoaderRoute: typeof HomeUsersUserIdRouteImport
+      parentRoute: typeof HomeRouteRoute
+    }
+    '/home/profile/upload': {
+      id: '/home/profile/upload'
+      path: '/upload'
+      fullPath: '/home/profile/upload'
+      preLoaderRoute: typeof HomeProfileUploadRouteImport
+      parentRoute: typeof HomeProfileRouteRoute
+    }
+    '/home/chats/$recipientId': {
+      id: '/home/chats/$recipientId'
+      path: '/$recipientId'
+      fullPath: '/home/chats/$recipientId'
+      preLoaderRoute: typeof HomeChatsRecipientIdRouteImport
+      parentRoute: typeof HomeChatsRoute
+    }
+    '/home/book/$bookId': {
+      id: '/home/book/$bookId'
+      path: '/book/$bookId'
+      fullPath: '/home/book/$bookId'
+      preLoaderRoute: typeof HomeBookBookIdRouteImport
+      parentRoute: typeof HomeRouteRoute
+    }
+    '/home/profile/read/$bookId': {
+      id: '/home/profile/read/$bookId'
+      path: '/read/$bookId'
+      fullPath: '/home/profile/read/$bookId'
+      preLoaderRoute: typeof HomeProfileReadBookIdRouteImport
+      parentRoute: typeof HomeProfileRouteRoute
+    }
   }
 }
 
 interface HomeProfileRouteRouteChildren {
+  HomeProfileUploadRoute: typeof HomeProfileUploadRoute
   HomeProfileIndexRoute: typeof HomeProfileIndexRoute
+  HomeProfileReadBookIdRoute: typeof HomeProfileReadBookIdRoute
 }
 
 const HomeProfileRouteRouteChildren: HomeProfileRouteRouteChildren = {
+  HomeProfileUploadRoute: HomeProfileUploadRoute,
   HomeProfileIndexRoute: HomeProfileIndexRoute,
+  HomeProfileReadBookIdRoute: HomeProfileReadBookIdRoute,
 }
 
 const HomeProfileRouteRouteWithChildren =
   HomeProfileRouteRoute._addFileChildren(HomeProfileRouteRouteChildren)
 
+interface HomeChatsRouteChildren {
+  HomeChatsRecipientIdRoute: typeof HomeChatsRecipientIdRoute
+  HomeChatsIndexRoute: typeof HomeChatsIndexRoute
+}
+
+const HomeChatsRouteChildren: HomeChatsRouteChildren = {
+  HomeChatsRecipientIdRoute: HomeChatsRecipientIdRoute,
+  HomeChatsIndexRoute: HomeChatsIndexRoute,
+}
+
+const HomeChatsRouteWithChildren = HomeChatsRoute._addFileChildren(
+  HomeChatsRouteChildren,
+)
+
 interface HomeRouteRouteChildren {
   HomeProfileRouteRoute: typeof HomeProfileRouteRouteWithChildren
+  HomeChatsRoute: typeof HomeChatsRouteWithChildren
+  HomeIndexRoute: typeof HomeIndexRoute
+  HomeBookBookIdRoute: typeof HomeBookBookIdRoute
+  HomeUsersUserIdRoute: typeof HomeUsersUserIdRoute
+  HomeUsersIndexRoute: typeof HomeUsersIndexRoute
 }
 
 const HomeRouteRouteChildren: HomeRouteRouteChildren = {
   HomeProfileRouteRoute: HomeProfileRouteRouteWithChildren,
+  HomeChatsRoute: HomeChatsRouteWithChildren,
+  HomeIndexRoute: HomeIndexRoute,
+  HomeBookBookIdRoute: HomeBookBookIdRoute,
+  HomeUsersUserIdRoute: HomeUsersUserIdRoute,
+  HomeUsersIndexRoute: HomeUsersIndexRoute,
 }
 
 const HomeRouteRouteWithChildren = HomeRouteRoute._addFileChildren(
@@ -148,17 +392,10 @@ const HomeRouteRouteWithChildren = HomeRouteRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   HomeRouteRoute: HomeRouteRouteWithChildren,
+  AuthForgotPasswordRoute: AuthForgotPasswordRoute,
   AuthLoginRoute: AuthLoginRoute,
+  AuthRegisterRoute: AuthRegisterRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}

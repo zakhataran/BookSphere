@@ -5,9 +5,19 @@ export type ClientOptions = {
 };
 
 export type UserEditDto = {
-    email?: string;
-    firstName?: string;
-    lastName?: string;
+    firstName: string;
+    lastName: string;
+};
+
+export type ImageUploadDto = {
+    avatar?: Blob | File;
+};
+
+export type ResetPasswordDto = {
+    email: string;
+    code: string;
+    newPassword: string;
+    confirmPassword: string;
 };
 
 export type ChangePasswordDto = {
@@ -24,7 +34,8 @@ export type LoginResponse = {
 
 export type BookUploadDto = {
     title: string;
-    author: string;
+    authorFirstName: string;
+    authorSecondName?: string;
     categoryId?: number;
     file?: Blob | File;
 };
@@ -41,6 +52,11 @@ export type UserReadDto = {
     userId?: string;
     username?: string;
     fullName?: string;
+    avatarUrl?: string;
+};
+
+export type RefreshTokenRequestDto = {
+    refresh_token?: string;
 };
 
 export type LoginDto = {
@@ -53,9 +69,11 @@ export type BookProgressUpdateDto = {
 };
 
 export type PublicProfileDto = {
+    id?: string;
     username?: string;
-    firstName?: string;
-    lastName?: string;
+    fullName?: string;
+    avatarUrl?: string;
+    isVerified?: boolean;
 };
 
 export type CustomPage = {
@@ -71,21 +89,31 @@ export type PageDtoUserReadDto = {
 };
 
 export type PrivateProfileDto = {
+    id?: string;
     username?: string;
     email?: string;
-    firstName?: string;
-    lastName?: string;
+    fullName?: string;
+    isVerified?: boolean;
+    avatarUrl?: string;
     createdAt?: string;
     updatedAt?: string;
+};
+
+export type ChatMessageDto = {
+    senderId?: string;
+    recipientId?: string;
+    content?: string;
+    timestamp?: string;
 };
 
 export type ForeignLibraryDto = {
     bookId?: string;
     title?: string;
-    author?: string;
+    authorFullName?: string;
     imageUrl?: string;
     categoryName?: string;
-    readStatus?: 'WANT_TO_READ' | 'READING' | 'FINISHED';
+    readingStatus?: 'WANT_TO_READ' | 'READING' | 'FINISHED';
+    readPercentage?: number;
 };
 
 export type PageDtoForeignLibraryDto = {
@@ -98,6 +126,8 @@ export type BookSearchDto = {
     title?: string;
     author?: string;
     imageUrl?: string;
+    categoryId?: number;
+    uploaderUsername?: string;
 };
 
 export type PageDtoBookSearchDto = {
@@ -108,7 +138,7 @@ export type PageDtoBookSearchDto = {
 export type MyLibraryDto = {
     bookId?: string;
     title?: string;
-    author?: string;
+    authorFullName?: string;
     imageUrl?: string;
     categoryName?: string;
     readingStatus?: 'WANT_TO_READ' | 'READING' | 'FINISHED';
@@ -119,6 +149,27 @@ export type MyLibraryDto = {
 export type PageDtoMyLibraryDto = {
     content?: Array<MyLibraryDto>;
     customPage?: CustomPage;
+};
+
+export type ReadBookDto = {
+    bookUrl?: string;
+    bookMarkPage?: number;
+};
+
+export type CategoryReadDto = {
+    categoryId?: number;
+    name?: string;
+};
+
+export type BookDetailsDto = {
+    bookId?: string;
+    title?: string;
+    authorFullName?: string;
+    categoryName?: string;
+    imageUrl?: string;
+    uploaderId?: string;
+    uploaderUsername?: string;
+    uploaderAvatarUrl?: string;
 };
 
 export type UserDeleteDto = {
@@ -133,6 +184,20 @@ export type ChangePersonalDataData = {
 };
 
 export type ChangePersonalDataResponses = {
+    /**
+     * OK
+     */
+    200: unknown;
+};
+
+export type UpdateAvatarData = {
+    body?: ImageUploadDto;
+    path?: never;
+    query?: never;
+    url: '/api/user/upload-avatar';
+};
+
+export type UpdateAvatarResponses = {
     /**
      * OK
      */
@@ -169,11 +234,45 @@ export type HandleUserVerificationResponses = {
     200: unknown;
 };
 
+export type InitiatePasswordResetData = {
+    body?: never;
+    path?: never;
+    query: {
+        email: string;
+    };
+    url: '/api/user/password-reset/initiate';
+};
+
+export type InitiatePasswordResetResponses = {
+    /**
+     * OK
+     */
+    200: string;
+};
+
+export type InitiatePasswordResetResponse = InitiatePasswordResetResponses[keyof InitiatePasswordResetResponses];
+
+export type ConfirmPasswordResetData = {
+    body: ResetPasswordDto;
+    path?: never;
+    query?: never;
+    url: '/api/user/password-reset/confirm';
+};
+
+export type ConfirmPasswordResetResponses = {
+    /**
+     * OK
+     */
+    200: string;
+};
+
+export type ConfirmPasswordResetResponse = ConfirmPasswordResetResponses[keyof ConfirmPasswordResetResponses];
+
 export type ChangePasswordData = {
     body: ChangePasswordDto;
     path?: never;
     query?: never;
-    url: '/api/user/password';
+    url: '/api/user/change-password';
 };
 
 export type ChangePasswordResponses = {
@@ -199,6 +298,26 @@ export type UploadBookResponses = {
     200: unknown;
 };
 
+export type PreviewCoverData = {
+    body?: {
+        file: Blob | File;
+    };
+    path?: never;
+    query?: never;
+    url: '/api/book/preview-cover';
+};
+
+export type PreviewCoverResponses = {
+    /**
+     * OK
+     */
+    200: {
+        [key: string]: string;
+    };
+};
+
+export type PreviewCoverResponse = PreviewCoverResponses[keyof PreviewCoverResponses];
+
 export type RegistrationData = {
     body: UserCreateDto;
     path?: never;
@@ -216,11 +335,9 @@ export type RegistrationResponses = {
 export type RegistrationResponse = RegistrationResponses[keyof RegistrationResponses];
 
 export type RefreshTokenData = {
-    body?: never;
+    body: RefreshTokenRequestDto;
     path?: never;
-    query: {
-        refresh_token: string;
-    };
+    query?: never;
     url: '/api/auth/refresh-token';
 };
 
@@ -303,7 +420,7 @@ export type SearchUserData = {
     body?: never;
     path?: never;
     query: {
-        username: string;
+        query: string;
         page?: number;
         size?: number;
     };
@@ -335,6 +452,40 @@ export type GetPersonalProfileResponses = {
 
 export type GetPersonalProfileResponse = GetPersonalProfileResponses[keyof GetPersonalProfileResponses];
 
+export type GetChatHistoryData = {
+    body?: never;
+    path: {
+        recipientId: string;
+    };
+    query?: never;
+    url: '/api/chat/history/{recipientId}';
+};
+
+export type GetChatHistoryResponses = {
+    /**
+     * OK
+     */
+    200: Array<ChatMessageDto>;
+};
+
+export type GetChatHistoryResponse = GetChatHistoryResponses[keyof GetChatHistoryResponses];
+
+export type GetRecentConversationsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/chat/conversations';
+};
+
+export type GetRecentConversationsResponses = {
+    /**
+     * OK
+     */
+    200: Array<UserReadDto>;
+};
+
+export type GetRecentConversationsResponse = GetRecentConversationsResponses[keyof GetRecentConversationsResponses];
+
 export type GetUserLibraryData = {
     body?: never;
     path: {
@@ -359,10 +510,11 @@ export type GetUserLibraryResponse = GetUserLibraryResponses[keyof GetUserLibrar
 export type GetBooksData = {
     body?: never;
     path?: never;
-    query: {
-        query: string;
-        categoryId: number;
-        sortFilter: string;
+    query?: {
+        query?: string;
+        categoryIds?: Array<number>;
+        isAscOrder?: boolean;
+        sortBy?: string;
         page?: number;
         size?: number;
     };
@@ -378,6 +530,44 @@ export type GetBooksResponses = {
 
 export type GetBooksResponse = GetBooksResponses[keyof GetBooksResponses];
 
+export type GetRecentBooksData = {
+    body?: never;
+    path?: never;
+    query?: {
+        page?: number;
+        size?: number;
+    };
+    url: '/api/book/recent';
+};
+
+export type GetRecentBooksResponses = {
+    /**
+     * OK
+     */
+    200: PageDtoBookSearchDto;
+};
+
+export type GetRecentBooksResponse = GetRecentBooksResponses[keyof GetRecentBooksResponses];
+
+export type GetMyReadingListData = {
+    body?: never;
+    path?: never;
+    query?: {
+        page?: number;
+        size?: number;
+    };
+    url: '/api/book/reading-list';
+};
+
+export type GetMyReadingListResponses = {
+    /**
+     * OK
+     */
+    200: PageDtoMyLibraryDto;
+};
+
+export type GetMyReadingListResponse = GetMyReadingListResponses[keyof GetMyReadingListResponses];
+
 export type ReadBookData = {
     body?: never;
     path: {
@@ -391,7 +581,7 @@ export type ReadBookResponses = {
     /**
      * OK
      */
-    200: string;
+    200: ReadBookDto;
 };
 
 export type ReadBookResponse = ReadBookResponses[keyof ReadBookResponses];
@@ -414,6 +604,40 @@ export type GetMyLibraryResponses = {
 };
 
 export type GetMyLibraryResponse = GetMyLibraryResponses[keyof GetMyLibraryResponses];
+
+export type GetAllCategoriesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/book/categories';
+};
+
+export type GetAllCategoriesResponses = {
+    /**
+     * OK
+     */
+    200: Array<CategoryReadDto>;
+};
+
+export type GetAllCategoriesResponse = GetAllCategoriesResponses[keyof GetAllCategoriesResponses];
+
+export type GetBookDetailsData = {
+    body?: never;
+    path: {
+        bookId: string;
+    };
+    query?: never;
+    url: '/api/book/book-details/{bookId}';
+};
+
+export type GetBookDetailsResponses = {
+    /**
+     * OK
+     */
+    200: BookDetailsDto;
+};
+
+export type GetBookDetailsResponse = GetBookDetailsResponses[keyof GetBookDetailsResponses];
 
 export type DeleteAccountData = {
     body: UserDeleteDto;

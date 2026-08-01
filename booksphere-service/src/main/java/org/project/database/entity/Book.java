@@ -24,8 +24,11 @@ public class Book {
     @Column(name = "title", length = 100, nullable = false)
     String title;
 
-    @Column(name = "author", length = 50, nullable = false)
-    String author;
+    @Column(name = "author_first_name", length = 50, nullable = false)
+    String authorFirstName;
+
+    @Column(name = "author_second_name", length = 50, nullable = false)
+    String authorSecondName;
 
     @Column(name = "num_pages", nullable = false)
     Integer numPages;

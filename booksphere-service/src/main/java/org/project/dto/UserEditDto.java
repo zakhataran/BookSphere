@@ -1,8 +1,10 @@
 package org.project.dto;
 
-//add annotations here
+import jakarta.validation.constraints.NotEmpty;
+
 public record UserEditDto(
-        String email,
+        @NotEmpty
         String firstName,
+        @NotEmpty
         String lastName
 ) {}

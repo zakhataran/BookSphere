@@ -4,19 +4,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentInformation;
-import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.rendering.PDFRenderer;
+import org.checkerframework.checker.units.qual.C;
 import org.project.config.SecurityConfig;
-import org.project.database.entity.Book;
-import org.project.database.entity.Category;
-import org.project.database.entity.User;
-import org.project.database.entity.UserBookStatus;
-import org.project.database.entity.enums.BookSortFilter;
+import org.project.database.entity.*;
+import org.project.database.entity.enums.BorrowStatus;
+import org.project.database.repository.*;
+import org.project.dto.filter.BookFilter;
 import org.project.database.entity.enums.ReadingStatus;
-import org.project.database.repository.BookRepository;
-import org.project.database.repository.CategoryRepository;
-import org.project.database.repository.UserBookStatusRepository;
-import org.project.database.repository.UserRepository;
 import org.project.database.specification.BookSpecifications;
 import org.project.dto.*;
 import org.project.exceptions.*;
@@ -27,6 +22,7 @@ import org.project.service.MinioService;
 import org.project.util.BookValidationUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -37,6 +33,8 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.UUID;
 
 @Slf4j
@@ -52,6 +50,8 @@ public class BookServiceImpl implements BookService {
     private final UserBookStatusRepository userBookStatusRepository;
     private final BookMapper bookMapper;
     private final UserBookStatusMapper userBookStatusMapper;
+    private final BookValidationUtils bookValidationUtils;
+    private final BorrowRecordRepository borrowRecordRepository;
 
     @Override
     @Transactional
@@ -65,14 +65,15 @@ public class BookServiceImpl implements BookService {
         }
 
         FileMetadataDto fileMetadata = extractMetadataFromPdf(bookUploadDto.file());
-        BookValidationUtils.validateBookData(bookUploadDto, fileMetadata);
+        bookValidationUtils.validateBookData(bookUploadDto, fileMetadata);
 
         Category category = categoryRepository.findById(bookUploadDto.categoryId())
                 .orElseThrow(() -> new CategoryNotFoundException("Invalid category ID"));
 
         Book book = Book.builder()
                 .title(bookUploadDto.title())
-                .author(bookUploadDto.author())
+                .authorFirstName(bookUploadDto.authorFirstName())
+                .authorSecondName(bookUploadDto.authorSecondName())
                 .numPages(fileMetadata.numPages())
                 .user(user)
                 .category(category)
@@ -102,6 +103,14 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    public String extractCoverBase64(MultipartFile file) {
+        byte[] coverBytes = extractCoverImageFromPdf(file);
+        String base64 = Base64.getEncoder().encodeToString(coverBytes);
+
+        return "data:image/png;base64," + base64;
+    }
+
+    @Override
     @Transactional
     public void updateBookProgress(UUID bookId, BookProgressUpdateDto updateDto) {
         String userEmail = securityConfig.getSecurityContext();
@@ -114,7 +123,7 @@ public class BookServiceImpl implements BookService {
         Integer totalPages = status.getBook().getNumPages();
         Integer currentPage = updateDto.currentPage();
 
-        if (currentPage > totalPages) {
+        if (totalPages != null && currentPage > totalPages) {
             currentPage = totalPages;
         }
 
@@ -150,6 +159,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public PageDto<MyLibraryDto> findMyLibrary(int page, int size) {
         String userEmail = securityConfig.getSecurityContext();
         User user = userRepository.findByEmail(userEmail)
@@ -164,6 +174,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public PageDto<ForeignLibraryDto> findForeignLibrary(UUID userId, int page, int size) {
         Page<UserBookStatus> statuses = userBookStatusRepository.findUserLibraryWithDetails(userId, PageRequest.of(page, size));
 
@@ -173,22 +184,21 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public PageDto<BookSearchDto> searchAndFilterBooks(String query, Long categoryId, BookSortFilter sortFilter, int page, int size) {
+    @Transactional(readOnly = true)
+    public PageDto<BookSearchDto> searchAndFilterBooks(BookFilter filter, int page, int size) {
         Specification<Book> specification = Specification.where(
-                BookSpecifications.titleOrAuthorContains(query)).and(
-                BookSpecifications.hasCategory(categoryId)
+                BookSpecifications.titleOrAuthorContains(filter.query())).and(
+                BookSpecifications.hasCategoryIn(filter.categoryIds())
         );
 
-        Sort sort = Sort.unsorted();
-        if (sortFilter != null) {
-            Sort.Direction direction = (sortFilter == BookSortFilter.CREATED_AT)
-                    ? Sort.Direction.DESC
-                    : Sort.Direction.ASC;
+        boolean isAsc = filter.isAscOrder() != null && filter.isAscOrder();
+        Sort.Direction direction = isAsc ? Sort.Direction.ASC : Sort.Direction.DESC;
 
-            sort = Sort.by(direction, sortFilter.getPropertyName());
-        }
+        String sortProperty = (filter.sortBy() != null && filter.sortBy().equals("title")) ? "title" : "createdAt";
 
-        Page<Book> books = bookRepository.findAll(specification, PageRequest.of(page, size, sort));
+        Page<Book> books = bookRepository.findAll(
+                specification,
+                PageRequest.of(page, size, Sort.by(direction, sortProperty)));
 
         return new PageDto<>(
                 bookMapper.toBookSearchDto(books.getContent()),
@@ -197,7 +207,45 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public String readBook(UUID bookId) {
+    @Transactional(readOnly = true)
+    public PageDto<BookSearchDto> getRecentBook(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<Book> recentBooks = bookRepository.findAll(pageable);
+
+        return new PageDto<>(
+                bookMapper.toBookSearchDto(recentBooks.getContent()),
+                new CustomPage(recentBooks.getTotalElements(), recentBooks.getTotalPages(), recentBooks.getNumber(), recentBooks.getSize())
+        );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageDto<MyLibraryDto> getMyReadingList(int page, int size) {
+        String userEmail = securityConfig.getSecurityContext();
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new UserNotFoundException("User with email:" + userEmail + " not found"));
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "updatedAt"));
+
+        Page<UserBookStatus> readingStatues = userBookStatusRepository.findByUserAndReadingStatus(user, ReadingStatus.READING, pageable);
+
+        return new PageDto<>(
+                userBookStatusMapper.toMyLibraryDto(readingStatues.getContent()),
+                new CustomPage(readingStatues.getTotalElements(), readingStatues.getTotalPages(), readingStatues.getNumber(), readingStatues.getSize())
+        );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public BookDetailsDto getBookDetails(UUID bookId) {
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new BookNotFoundException("Book not found with id: " + bookId));
+
+        return bookMapper.toBookDetailsDto(book);
+    }
+
+    @Override
+    public ReadBookDto readBook(UUID bookId) {
         String userEmail = securityConfig.getSecurityContext();
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
@@ -206,14 +254,31 @@ public class BookServiceImpl implements BookService {
             throw new UserIsNotVerifiedException("User email is not verified");
         }
 
-        Book book = bookRepository.findBookById(bookId)
+        Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new BookNotFoundException("Book not found"));
 
         if (!user.getId().equals(book.getUser().getId())) {
             throw new UserHasNoPermission("Book: " + book.getTitle() + " is not in " + user.getUsername() + "'s library");
         }
 
-        return book.getBookUrl();
+        if (!book.getUser().getId().equals(user.getId())) {
+            BorrowRecord activeBorrow = borrowRecordRepository
+                    .findActiveBorrow(book.getId(), user.getId())
+                    .orElseThrow(() -> new IllegalArgumentException("You don't have access to this book. Request it from owner"));
+
+            if (activeBorrow.getExpiresAt() != null && activeBorrow.getExpiresAt().isBefore(LocalDateTime.now())) {
+                activeBorrow.setStatus(BorrowStatus.EXPIRED);
+                borrowRecordRepository.save(activeBorrow);
+
+                throw new IllegalArgumentException("The book access is expired");
+            }
+        }
+
+        UserBookStatus status = userBookStatusRepository.findUserBookStatusByUserIdAndBookId(user.getId(), bookId)
+                .orElseThrow(() -> new UserBookStatusNotFoundException("Book not found in user's library"));
+
+        Integer startPage = status.getBookMarkPage() != null ? status.getBookMarkPage() : 1;
+        return new ReadBookDto(book.getBookUrl(), startPage);
     }
 
     private FileMetadataDto extractMetadataFromPdf(MultipartFile file) {
@@ -237,8 +302,6 @@ public class BookServiceImpl implements BookService {
             if (document.getNumberOfPages() == 0) {
                 throw new FileProcessingException("PDF has no pages");
             }
-
-            PDPage firstPage = document.getPage(0);
 
             PDFRenderer renderer = new PDFRenderer(document);
             BufferedImage image = renderer.renderImageWithDPI(0, 150);
