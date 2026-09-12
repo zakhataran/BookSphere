@@ -10,6 +10,7 @@ import org.project.database.repository.BookRepository;
 import org.project.database.repository.BorrowRecordRepository;
 import org.project.database.repository.UserRepository;
 import org.project.dto.BorrowRecordDto;
+import org.project.dto.BorrowRequestViewDto;
 import org.project.exceptions.BookNotFoundException;
 import org.project.exceptions.UserNotFoundException;
 import org.project.service.BorrowService;
@@ -74,7 +75,7 @@ public class BorrowServiceImpl implements BorrowService {
             throw new IllegalArgumentException("Only PENDING request can be approved");
         }
 
-        record.setStatus(BorrowStatus.PENDING);
+        record.setStatus(BorrowStatus.APPROVED);
         record.setModifiedAt(LocalDateTime.now());
         record.setExpiresAt(LocalDateTime.now().plusDays(record.getRequestedDays()));
 
@@ -82,6 +83,7 @@ public class BorrowServiceImpl implements BorrowService {
     }
 
     @Override
+    @Transactional
     public void rejectRequest(UUID recordId) {
         User currentUser = getCurrentUser();
         BorrowRecord record = borrowRecordRepository.findById(recordId)
@@ -96,11 +98,53 @@ public class BorrowServiceImpl implements BorrowService {
         borrowRecordRepository.save(record);
     }
 
-    // TODO: список запросов входящих и выходящих (или все сразу) одним методом и под нее страницу в чатах
+    @Override
+    public BorrowRecordDto getBorrowStatus(UUID bookId) {
+        User currentUser = getCurrentUser();
+
+        return borrowRecordRepository
+                .findByBookIdAndBorrowerIdAndStatusIn(bookId, currentUser.getId(), List.of(BorrowStatus.PENDING, BorrowStatus.APPROVED))
+                .map(saved -> new BorrowRecordDto(saved.getId(), saved.getBookId(), saved.getBorrowerId(), saved.getStatus(), saved.getRequestedDays(), saved.getExpiresAt(), saved.getModifiedAt()))
+                .orElse(null);
+    }
+
+    @Override
+    public List<BorrowRequestViewDto> getIncomingRequest() {
+        User currentUser = getCurrentUser();
+        return borrowRecordRepository.findAllByOwnerIdOrderByCreatedAtDesc(currentUser.getId())
+                .stream().map(this::mapToViewDto).toList();
+    }
+
+    @Override
+    public List<BorrowRequestViewDto> getOutgoingRequest() {
+        User currentUser = getCurrentUser();
+        return borrowRecordRepository.findAllByBorrowerIdOrderByCreatedAtDesc(currentUser.getId())
+                .stream().map(this::mapToViewDto).toList();
+    }
 
     private User getCurrentUser() {
         String email = securityConfig.getSecurityContext();
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
+    }
+
+    private BorrowRequestViewDto mapToViewDto (BorrowRecord record) {
+        Book book = bookRepository.findById(record.getBookId()).orElseThrow();
+        boolean isIncoming = record.getOwnerId().equals(getCurrentUser().getId());
+        User otherUser = userRepository.findById(isIncoming ? record.getBorrowerId() : record.getOwnerId()).orElseThrow();
+
+        return new BorrowRequestViewDto(
+                record.getId(),
+                book.getId(),
+                book.getTitle(),
+                book.getImageUrl(),
+                otherUser.getId(),
+                otherUser.getFirstName() + " " + otherUser.getLastName(),
+                otherUser.getAvatarUrl(),
+                record.getStatus(),
+                record.getRequestedDays(),
+                record.getExpiresAt(),
+                record.getCreatedAt()
+        );
     }
 }

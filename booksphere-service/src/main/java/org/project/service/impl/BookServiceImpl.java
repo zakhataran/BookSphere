@@ -20,6 +20,7 @@ import org.project.mapper.UserBookStatusMapper;
 import org.project.service.BookService;
 import org.project.service.MinioService;
 import org.project.util.BookValidationUtils;
+import org.springframework.cglib.core.Local;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -257,27 +258,26 @@ public class BookServiceImpl implements BookService {
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new BookNotFoundException("Book not found"));
 
-        if (!user.getId().equals(book.getUser().getId())) {
-            throw new UserHasNoPermission("Book: " + book.getTitle() + " is not in " + user.getUsername() + "'s library");
-        }
+        boolean isOwner = user.getId().equals(book.getUser().getId());
 
-        if (!book.getUser().getId().equals(user.getId())) {
-            BorrowRecord activeBorrow = borrowRecordRepository
-                    .findActiveBorrow(book.getId(), user.getId())
-                    .orElseThrow(() -> new IllegalArgumentException("You don't have access to this book. Request it from owner"));
+        if (!isOwner) {
+            BorrowRecord activeBorrow = borrowRecordRepository.findActiveBorrow(book.getId(), user.getId())
+                    .orElseThrow(() -> new UserHasNoPermission("You don't have access to this book."));
 
             if (activeBorrow.getExpiresAt() != null && activeBorrow.getExpiresAt().isBefore(LocalDateTime.now())) {
                 activeBorrow.setStatus(BorrowStatus.EXPIRED);
                 borrowRecordRepository.save(activeBorrow);
-
-                throw new IllegalArgumentException("The book access is expired");
+                throw new IllegalArgumentException("The rental period for this book has expired");
             }
         }
 
-        UserBookStatus status = userBookStatusRepository.findUserBookStatusByUserIdAndBookId(user.getId(), bookId)
-                .orElseThrow(() -> new UserBookStatusNotFoundException("Book not found in user's library"));
+        Integer startPage = 1;
+        var statusOpt = userBookStatusRepository.findUserBookStatusByUserIdAndBookId(user.getId(), bookId);
 
-        Integer startPage = status.getBookMarkPage() != null ? status.getBookMarkPage() : 1;
+        if (statusOpt.isPresent() && statusOpt.get().getBookMarkPage() != null) {
+            startPage = statusOpt.get().getBookMarkPage();
+        }
+
         return new ReadBookDto(book.getBookUrl(), startPage);
     }
 

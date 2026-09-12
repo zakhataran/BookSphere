@@ -25,6 +25,7 @@ import { Route as HomeProfileUploadRouteImport } from './routes/home/profile/upl
 import { Route as HomeChatsRecipientIdRouteImport } from './routes/home/chats/$recipientId'
 import { Route as HomeBookBookIdRouteImport } from './routes/home/book/$bookId'
 import { Route as HomeProfileReadBookIdRouteImport } from './routes/home/profile/read.$bookId'
+import { Route as HomeChatsRequestsRecordIdRouteImport } from './routes/home/chats/requests/$recordId'
 
 const HomeRouteRoute = HomeRouteRouteImport.update({
   id: '/home',
@@ -106,6 +107,12 @@ const HomeProfileReadBookIdRoute = HomeProfileReadBookIdRouteImport.update({
   path: '/read/$bookId',
   getParentRoute: () => HomeProfileRouteRoute,
 } as any)
+const HomeChatsRequestsRecordIdRoute =
+  HomeChatsRequestsRecordIdRouteImport.update({
+    id: '/requests/$recordId',
+    path: '/requests/$recordId',
+    getParentRoute: () => HomeChatsRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -123,6 +130,7 @@ export interface FileRoutesByFullPath {
   '/home/chats/': typeof HomeChatsIndexRoute
   '/home/profile/': typeof HomeProfileIndexRoute
   '/home/users/': typeof HomeUsersIndexRoute
+  '/home/chats/requests/$recordId': typeof HomeChatsRequestsRecordIdRoute
   '/home/profile/read/$bookId': typeof HomeProfileReadBookIdRoute
 }
 export interface FileRoutesByTo {
@@ -138,6 +146,7 @@ export interface FileRoutesByTo {
   '/home/chats': typeof HomeChatsIndexRoute
   '/home/profile': typeof HomeProfileIndexRoute
   '/home/users': typeof HomeUsersIndexRoute
+  '/home/chats/requests/$recordId': typeof HomeChatsRequestsRecordIdRoute
   '/home/profile/read/$bookId': typeof HomeProfileReadBookIdRoute
 }
 export interface FileRoutesById {
@@ -157,6 +166,7 @@ export interface FileRoutesById {
   '/home/chats/': typeof HomeChatsIndexRoute
   '/home/profile/': typeof HomeProfileIndexRoute
   '/home/users/': typeof HomeUsersIndexRoute
+  '/home/chats/requests/$recordId': typeof HomeChatsRequestsRecordIdRoute
   '/home/profile/read/$bookId': typeof HomeProfileReadBookIdRoute
 }
 export interface FileRouteTypes {
@@ -177,6 +187,7 @@ export interface FileRouteTypes {
     | '/home/chats/'
     | '/home/profile/'
     | '/home/users/'
+    | '/home/chats/requests/$recordId'
     | '/home/profile/read/$bookId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -192,6 +203,7 @@ export interface FileRouteTypes {
     | '/home/chats'
     | '/home/profile'
     | '/home/users'
+    | '/home/chats/requests/$recordId'
     | '/home/profile/read/$bookId'
   id:
     | '__root__'
@@ -210,6 +222,7 @@ export interface FileRouteTypes {
     | '/home/chats/'
     | '/home/profile/'
     | '/home/users/'
+    | '/home/chats/requests/$recordId'
     | '/home/profile/read/$bookId'
   fileRoutesById: FileRoutesById
 }
@@ -335,6 +348,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HomeProfileReadBookIdRouteImport
       parentRoute: typeof HomeProfileRouteRoute
     }
+    '/home/chats/requests/$recordId': {
+      id: '/home/chats/requests/$recordId'
+      path: '/requests/$recordId'
+      fullPath: '/home/chats/requests/$recordId'
+      preLoaderRoute: typeof HomeChatsRequestsRecordIdRouteImport
+      parentRoute: typeof HomeChatsRoute
+    }
   }
 }
 
@@ -356,11 +376,13 @@ const HomeProfileRouteRouteWithChildren =
 interface HomeChatsRouteChildren {
   HomeChatsRecipientIdRoute: typeof HomeChatsRecipientIdRoute
   HomeChatsIndexRoute: typeof HomeChatsIndexRoute
+  HomeChatsRequestsRecordIdRoute: typeof HomeChatsRequestsRecordIdRoute
 }
 
 const HomeChatsRouteChildren: HomeChatsRouteChildren = {
   HomeChatsRecipientIdRoute: HomeChatsRecipientIdRoute,
   HomeChatsIndexRoute: HomeChatsIndexRoute,
+  HomeChatsRequestsRecordIdRoute: HomeChatsRequestsRecordIdRoute,
 }
 
 const HomeChatsRouteWithChildren = HomeChatsRoute._addFileChildren(

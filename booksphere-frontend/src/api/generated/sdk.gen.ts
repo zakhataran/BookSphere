@@ -2,7 +2,7 @@
 
 import { type Client, formDataBodySerializer, type Options as Options2, type TDataShape } from './client';
 import { client } from './client.gen';
-import type { ChangePasswordData, ChangePasswordResponses, ChangePersonalDataData, ChangePersonalDataResponses, ConfirmPasswordResetData, ConfirmPasswordResetResponses, DeleteAccountData, DeleteAccountResponses, GetAllCategoriesData, GetAllCategoriesResponses, GetBookDetailsData, GetBookDetailsResponses, GetBooksData, GetBooksResponses, GetChatHistoryData, GetChatHistoryResponses, GetMyLibraryData, GetMyLibraryResponses, GetMyReadingListData, GetMyReadingListResponses, GetPersonalProfileData, GetPersonalProfileResponses, GetRecentBooksData, GetRecentBooksResponses, GetRecentConversationsData, GetRecentConversationsResponses, GetUserLibraryData, GetUserLibraryResponses, GetUserProfileData, GetUserProfileResponses, HandleUserVerificationData, HandleUserVerificationResponses, InitiatePasswordResetData, InitiatePasswordResetResponses, LoginData, LoginResponses, MarkAsReadingData, MarkAsReadingResponses, PreviewCoverData, PreviewCoverResponses, ReadBookData, ReadBookResponses, RefreshTokenData, RefreshTokenResponses, RegistrationData, RegistrationResponses, SearchUserData, SearchUserResponses, SendVerificationMailData, SendVerificationMailResponses, UpdateAvatarData, UpdateAvatarResponses, UpdateBookStatusData, UpdateBookStatusResponses, UploadBookData, UploadBookResponses } from './types.gen';
+import type { ApproveRequestData, ApproveRequestResponses, ChangePasswordData, ChangePasswordResponses, ChangePersonalDataData, ChangePersonalDataResponses, ConfirmPasswordResetData, ConfirmPasswordResetResponses, DeleteAccountData, DeleteAccountResponses, GetAllCategoriesData, GetAllCategoriesResponses, GetBookDetailsData, GetBookDetailsResponses, GetBooksData, GetBooksResponses, GetBorrowsStatusData, GetBorrowsStatusResponses, GetChatHistoryData, GetChatHistoryResponses, GetIncomingRequestsData, GetIncomingRequestsResponses, GetMyLibraryData, GetMyLibraryResponses, GetMyReadingListData, GetMyReadingListResponses, GetOutgoingRequestsData, GetOutgoingRequestsResponses, GetPersonalProfileData, GetPersonalProfileResponses, GetRecentBooksData, GetRecentBooksResponses, GetRecentConversationsData, GetRecentConversationsResponses, GetUserLibraryData, GetUserLibraryResponses, GetUserProfileData, GetUserProfileResponses, HandleUserVerificationData, HandleUserVerificationResponses, InitiatePasswordResetData, InitiatePasswordResetResponses, LoginData, LoginResponses, MarkAsReadingData, MarkAsReadingResponses, PreviewCoverData, PreviewCoverResponses, ReadBookData, ReadBookResponses, RefreshTokenData, RefreshTokenResponses, RegistrationData, RegistrationResponses, RejectRequestData, RejectRequestResponses, RequestBookData, RequestBookResponses, SearchUserData, SearchUserResponses, SendVerificationMailData, SendVerificationMailResponses, UpdateAvatarData, UpdateAvatarResponses, UpdateBookStatusData, UpdateBookStatusResponses, UploadBookData, UploadBookResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -75,6 +75,28 @@ export const changePassword = <ThrowOnError extends boolean = false>(options: Op
         'Content-Type': 'application/json',
         ...options.headers
     }
+});
+
+export const requestBook = <ThrowOnError extends boolean = false>(options: Options<RequestBookData, ThrowOnError>) => (options.client ?? client).post<RequestBookResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/borrow/request/{bookId}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+export const rejectRequest = <ThrowOnError extends boolean = false>(options: Options<RejectRequestData, ThrowOnError>) => (options.client ?? client).post<RejectRequestResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/borrow/reject/{recordId}',
+    ...options
+});
+
+export const approveRequest = <ThrowOnError extends boolean = false>(options: Options<ApproveRequestData, ThrowOnError>) => (options.client ?? client).post<ApproveRequestResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/borrow/approve/{recordId}',
+    ...options
 });
 
 export const uploadBook = <ThrowOnError extends boolean = false>(options?: Options<UploadBookData, ThrowOnError>) => (options?.client ?? client).post<UploadBookResponses, unknown, ThrowOnError>({
@@ -172,6 +194,24 @@ export const getChatHistory = <ThrowOnError extends boolean = false>(options: Op
 export const getRecentConversations = <ThrowOnError extends boolean = false>(options?: Options<GetRecentConversationsData, ThrowOnError>) => (options?.client ?? client).get<GetRecentConversationsResponses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/chat/conversations',
+    ...options
+});
+
+export const getBorrowsStatus = <ThrowOnError extends boolean = false>(options: Options<GetBorrowsStatusData, ThrowOnError>) => (options.client ?? client).get<GetBorrowsStatusResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/borrow/status/{bookId}',
+    ...options
+});
+
+export const getOutgoingRequests = <ThrowOnError extends boolean = false>(options?: Options<GetOutgoingRequestsData, ThrowOnError>) => (options?.client ?? client).get<GetOutgoingRequestsResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/borrow/outgoing',
+    ...options
+});
+
+export const getIncomingRequests = <ThrowOnError extends boolean = false>(options?: Options<GetIncomingRequestsData, ThrowOnError>) => (options?.client ?? client).get<GetIncomingRequestsResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/borrow/incoming',
     ...options
 });
 

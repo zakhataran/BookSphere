@@ -32,6 +32,20 @@ export type LoginResponse = {
     refresh_expires_in?: number;
 };
 
+export type BorrowRequestDto = {
+    requestDays?: number;
+};
+
+export type BorrowRecordDto = {
+    id?: string;
+    bookId?: string;
+    borrowerId?: string;
+    status?: 'PENDING' | 'APPROVED' | 'REJECTED' | 'EXPIRED';
+    requestDays?: number;
+    expiresAt?: string;
+    modifiedAt?: string;
+};
+
 export type BookUploadDto = {
     title: string;
     authorFirstName: string;
@@ -104,6 +118,20 @@ export type ChatMessageDto = {
     recipientId?: string;
     content?: string;
     timestamp?: string;
+};
+
+export type BorrowRequestViewDto = {
+    recordId?: string;
+    bookId?: string;
+    bookTitle?: string;
+    bookImageUrl?: string;
+    otherUserId?: string;
+    otherUserFullName?: string;
+    otherUserAvatarUrl?: string;
+    status?: 'PENDING' | 'APPROVED' | 'REJECTED' | 'EXPIRED';
+    requestedDays?: number;
+    expiresAt?: string;
+    createdAt?: string;
 };
 
 export type ForeignLibraryDto = {
@@ -283,6 +311,56 @@ export type ChangePasswordResponses = {
 };
 
 export type ChangePasswordResponse = ChangePasswordResponses[keyof ChangePasswordResponses];
+
+export type RequestBookData = {
+    body: BorrowRequestDto;
+    path: {
+        bookId: string;
+    };
+    query?: never;
+    url: '/api/borrow/request/{bookId}';
+};
+
+export type RequestBookResponses = {
+    /**
+     * OK
+     */
+    200: BorrowRecordDto;
+};
+
+export type RequestBookResponse = RequestBookResponses[keyof RequestBookResponses];
+
+export type RejectRequestData = {
+    body?: never;
+    path: {
+        recordId: string;
+    };
+    query?: never;
+    url: '/api/borrow/reject/{recordId}';
+};
+
+export type RejectRequestResponses = {
+    /**
+     * OK
+     */
+    200: unknown;
+};
+
+export type ApproveRequestData = {
+    body?: never;
+    path: {
+        recordId: string;
+    };
+    query?: never;
+    url: '/api/borrow/approve/{recordId}';
+};
+
+export type ApproveRequestResponses = {
+    /**
+     * OK
+     */
+    200: unknown;
+};
 
 export type UploadBookData = {
     body?: BookUploadDto;
@@ -485,6 +563,56 @@ export type GetRecentConversationsResponses = {
 };
 
 export type GetRecentConversationsResponse = GetRecentConversationsResponses[keyof GetRecentConversationsResponses];
+
+export type GetBorrowsStatusData = {
+    body?: never;
+    path: {
+        bookId: string;
+    };
+    query?: never;
+    url: '/api/borrow/status/{bookId}';
+};
+
+export type GetBorrowsStatusResponses = {
+    /**
+     * OK
+     */
+    200: BorrowRecordDto;
+};
+
+export type GetBorrowsStatusResponse = GetBorrowsStatusResponses[keyof GetBorrowsStatusResponses];
+
+export type GetOutgoingRequestsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/borrow/outgoing';
+};
+
+export type GetOutgoingRequestsResponses = {
+    /**
+     * OK
+     */
+    200: Array<BorrowRequestViewDto>;
+};
+
+export type GetOutgoingRequestsResponse = GetOutgoingRequestsResponses[keyof GetOutgoingRequestsResponses];
+
+export type GetIncomingRequestsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/borrow/incoming';
+};
+
+export type GetIncomingRequestsResponses = {
+    /**
+     * OK
+     */
+    200: Array<BorrowRequestViewDto>;
+};
+
+export type GetIncomingRequestsResponse = GetIncomingRequestsResponses[keyof GetIncomingRequestsResponses];
 
 export type GetUserLibraryData = {
     body?: never;

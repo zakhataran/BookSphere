@@ -16,6 +16,8 @@ public interface BorrowRecordRepository extends JpaRepository<BorrowRecord, UUID
 
     List<BorrowRecord> findAllByOwnerIdOrderByCreatedAtDesc(UUID ownerId);
 
+    List<BorrowRecord> findAllByBorrowerIdOrderByCreatedAtDesc(UUID borrowerId);
+
     Optional<BorrowRecord> findByBookIdAndBorrowerIdAndStatusIn(UUID bookId, UUID borrowerId, List<BorrowStatus> statuses);
 
     @Query("SELECT b FROM BorrowRecord b WHERE b.bookId = :bookId AND b.borrowerId = :borrowerId AND b.status = 'APPROVED'")
