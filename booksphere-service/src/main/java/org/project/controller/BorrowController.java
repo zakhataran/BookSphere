@@ -1,9 +1,7 @@
 package org.project.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.project.dto.BorrowRecordDto;
-import org.project.dto.BorrowRequestDto;
-import org.project.dto.BorrowRequestViewDto;
+import org.project.dto.*;
 import org.project.service.BorrowService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -52,5 +50,12 @@ public class BorrowController {
     public ResponseEntity<List<BorrowRequestViewDto>> getOutgoingRequests() {
         List<BorrowRequestViewDto> requests = borrowService.getOutgoingRequest();
         return ResponseEntity.ok(requests);
+    }
+
+    @GetMapping("/borrowed-books")
+    public ResponseEntity<PageDto<MyLibraryDto>> getBorrowedBooks(@RequestParam(defaultValue = "0") int page,
+                                                                  @RequestParam(defaultValue = "10") int size) {
+        PageDto<MyLibraryDto> books = borrowService.getBorrowedBooks(page, size);
+        return ResponseEntity.ok(books);
     }
 }

@@ -54,7 +54,8 @@ public class SecurityConfig {
                                 "/api/book/my-library",
                                 "/api/book/reading-list",
                                 "/api/book/read-book/*",
-                                "/api/chat/history/*").authenticated()
+                                "/api/chat/history/*",
+                                "api/borrow/borrowed-books").authenticated()
                         .anyRequest().permitAll())
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())))

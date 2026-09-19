@@ -118,8 +118,16 @@ public class BookServiceImpl implements BookService {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new BookNotFoundException("Book not found"));
+
         UserBookStatus status = userBookStatusRepository.findUserBookStatusByUserIdAndBookId(user.getId(), bookId)
-                .orElseThrow(() -> new UserBookStatusNotFoundException("Book not found in user's library"));
+                .orElseGet(() -> UserBookStatus.builder()
+                        .user(user)
+                        .book(book)
+                        .readingStatus(ReadingStatus.READING)
+                        .bookMarkPage(1)
+                        .build());
 
         Integer totalPages = status.getBook().getNumPages();
         Integer currentPage = updateDto.currentPage();
@@ -146,8 +154,16 @@ public class BookServiceImpl implements BookService {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new BookNotFoundException("Book not found"));
+
         UserBookStatus status = userBookStatusRepository.findUserBookStatusByUserIdAndBookId(user.getId(), bookId)
-                .orElseThrow(() -> new UserBookStatusNotFoundException("Book not found in user's library"));
+                .orElseGet(() -> UserBookStatus.builder()
+                        .user(user)
+                        .book(book)
+                        .readingStatus(ReadingStatus.READING)
+                        .bookMarkPage(1)
+                        .build());
 
         if (status.getReadingStatus() == ReadingStatus.WANT_TO_READ) {
             status.setReadingStatus(ReadingStatus.READING);

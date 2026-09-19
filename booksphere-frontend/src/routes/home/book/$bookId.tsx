@@ -97,7 +97,7 @@ function BookDetailsPage() {
       const fileUrl = res.data?.bookUrl || (res.data as any)?.fileUrl || (res.data as any)?.url;
 
       if (fileUrl) {
-        window.open(fileUrl, '_blank');
+        navigate({ to: `/home/profile/read/${book.bookId}` });
       } else {
         alert("Сервер не вернул ссылку на файл книги.");
       }

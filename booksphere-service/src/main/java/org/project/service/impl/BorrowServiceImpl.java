@@ -5,15 +5,22 @@ import org.project.config.SecurityConfig;
 import org.project.database.entity.Book;
 import org.project.database.entity.BorrowRecord;
 import org.project.database.entity.User;
+import org.project.database.entity.UserBookStatus;
 import org.project.database.entity.enums.BorrowStatus;
+import org.project.database.entity.enums.ReadingStatus;
 import org.project.database.repository.BookRepository;
 import org.project.database.repository.BorrowRecordRepository;
+import org.project.database.repository.UserBookStatusRepository;
 import org.project.database.repository.UserRepository;
-import org.project.dto.BorrowRecordDto;
-import org.project.dto.BorrowRequestViewDto;
+import org.project.dto.*;
 import org.project.exceptions.BookNotFoundException;
 import org.project.exceptions.UserNotFoundException;
+import org.project.mapper.UserBookStatusMapper;
 import org.project.service.BorrowService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +36,8 @@ public class BorrowServiceImpl implements BorrowService {
     private final BookRepository bookRepository;
     private final UserRepository userRepository;
     private final SecurityConfig securityConfig;
+    private final UserBookStatusRepository userBookStatusRepository;
+    private final UserBookStatusMapper userBookStatusMapper;
 
     @Override
     @Transactional
@@ -120,6 +129,33 @@ public class BorrowServiceImpl implements BorrowService {
         User currentUser = getCurrentUser();
         return borrowRecordRepository.findAllByBorrowerIdOrderByCreatedAtDesc(currentUser.getId())
                 .stream().map(this::mapToViewDto).toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageDto<MyLibraryDto> getBorrowedBooks(int page, int size) {
+        User currentUser = getCurrentUser();
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        Page<BorrowRecord> borrowRecords = borrowRecordRepository.findAllByBorrowerIdAndStatus(currentUser.getId(), BorrowStatus.APPROVED, pageable);
+
+        List<UserBookStatus> statuses = borrowRecords.getContent().stream()
+                .map(record -> {
+                    Book book = bookRepository.findById(record.getBookId())
+                            .orElseThrow(() -> new BookNotFoundException("Book not found"));
+
+                    return userBookStatusRepository.findUserBookStatusByUserIdAndBookId(currentUser.getId(), book.getId())
+                            .orElseGet(() -> UserBookStatus.builder()
+                                    .user(currentUser)
+                                    .book(book)
+                                    .readingStatus(ReadingStatus.WANT_TO_READ)
+                                    .bookMarkPage(1)
+                                    .build());
+                }).toList();
+
+        return new PageDto<>(
+                userBookStatusMapper.toMyLibraryDto(statuses), new CustomPage(borrowRecords.getTotalElements(), borrowRecords.getTotalPages(), borrowRecords.getNumber(), borrowRecords.getSize())
+        );
     }
 
     private User getCurrentUser() {

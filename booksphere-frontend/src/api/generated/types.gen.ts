@@ -134,6 +134,22 @@ export type BorrowRequestViewDto = {
     createdAt?: string;
 };
 
+export type MyLibraryDto = {
+    bookId?: string;
+    title?: string;
+    authorFullName?: string;
+    imageUrl?: string;
+    categoryName?: string;
+    readingStatus?: 'WANT_TO_READ' | 'READING' | 'FINISHED';
+    bookMarkPage?: number;
+    readPercentage?: number;
+};
+
+export type PageDtoMyLibraryDto = {
+    content?: Array<MyLibraryDto>;
+    customPage?: CustomPage;
+};
+
 export type ForeignLibraryDto = {
     bookId?: string;
     title?: string;
@@ -160,22 +176,6 @@ export type BookSearchDto = {
 
 export type PageDtoBookSearchDto = {
     content?: Array<BookSearchDto>;
-    customPage?: CustomPage;
-};
-
-export type MyLibraryDto = {
-    bookId?: string;
-    title?: string;
-    authorFullName?: string;
-    imageUrl?: string;
-    categoryName?: string;
-    readingStatus?: 'WANT_TO_READ' | 'READING' | 'FINISHED';
-    bookMarkPage?: number;
-    readPercentage?: number;
-};
-
-export type PageDtoMyLibraryDto = {
-    content?: Array<MyLibraryDto>;
     customPage?: CustomPage;
 };
 
@@ -613,6 +613,25 @@ export type GetIncomingRequestsResponses = {
 };
 
 export type GetIncomingRequestsResponse = GetIncomingRequestsResponses[keyof GetIncomingRequestsResponses];
+
+export type GetBorrowedBooksData = {
+    body?: never;
+    path?: never;
+    query?: {
+        page?: number;
+        size?: number;
+    };
+    url: '/api/borrow/borrowed-books';
+};
+
+export type GetBorrowedBooksResponses = {
+    /**
+     * OK
+     */
+    200: PageDtoMyLibraryDto;
+};
+
+export type GetBorrowedBooksResponse = GetBorrowedBooksResponses[keyof GetBorrowedBooksResponses];
 
 export type GetUserLibraryData = {
     body?: never;

@@ -2,6 +2,8 @@ package org.project.service;
 
 import org.project.dto.BorrowRecordDto;
 import org.project.dto.BorrowRequestViewDto;
+import org.project.dto.MyLibraryDto;
+import org.project.dto.PageDto;
 
 import java.util.List;
 import java.util.UUID;
@@ -19,4 +21,6 @@ public interface BorrowService {
     List<BorrowRequestViewDto> getIncomingRequest();
 
     List<BorrowRequestViewDto> getOutgoingRequest();
+
+    PageDto<MyLibraryDto> getBorrowedBooks(int page, int size);
 }

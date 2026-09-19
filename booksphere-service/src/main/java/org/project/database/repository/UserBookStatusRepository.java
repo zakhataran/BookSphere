@@ -19,10 +19,11 @@ import java.util.UUID;
 public interface UserBookStatusRepository extends JpaRepository<UserBookStatus, UserBookStatusId> {
 
     @Query(value = "SELECT ubs FROM UserBookStatus ubs " +
-            "WHERE ubs.user.id = :userId",
+            "JOIN FETCH ubs.book b " +
+            "WHERE ubs.user.id = :userId AND b.user.id = :userId",
 
             countQuery = "SELECT COUNT(ubs) FROM UserBookStatus ubs " +
-                    "WHERE ubs.user.id = :userId")
+                    "WHERE ubs.user.id = :userId AND ubs.book.user.id = :userId")
     Page<UserBookStatus> findUserLibraryWithDetails(@Param("userId") UUID userId, Pageable pageable);
 
     Optional<UserBookStatus> findUserBookStatusByUserIdAndBookId(UUID userId, UUID bookId);
