@@ -17,7 +17,6 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import SearchIcon from '@mui/icons-material/Search';
 
-// 🔥 Добавили импорт getBorrowedBooks
 import { getMyLibrary, getBorrowedBooks } from '../../../api/generated/sdk.gen';
 
 const PAGE_SIZE = 10;
@@ -43,7 +42,6 @@ export const Route = createFileRoute('/home/profile/')({
       const token = localStorage.getItem('bookSphere_token');
       const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
 
-      // 🔥 В зависимости от вкладки дергаем нужный эндпоинт
       let response;
       if (tab === 'borrowed') {
         response = await getBorrowedBooks({ headers, query: { page, size: PAGE_SIZE } });
@@ -80,7 +78,7 @@ function ProfileLibrary() {
   const handleTabChange = (_event: React.SyntheticEvent, newValue: 'my' | 'borrowed') => {
     navigate({
       to: '/home/profile',
-      search: { page: 0, tab: newValue }, // При смене вкладки сбрасываем страницу на 0
+      search: { page: 0, tab: newValue },
     });
   };
 
@@ -90,7 +88,6 @@ function ProfileLibrary() {
 
   return (
     <Box>
-      {/* ШАПКА */}
       <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
@@ -104,7 +101,6 @@ function ProfileLibrary() {
               Total books: {totalBooks}
             </Typography>
 
-            {/* Кнопка добавления книги показывается только на вкладке "Мои книги" */}
             {activeTab === 'my' && books.length > 0 && (
               <IconButton
                 onClick={handleAddBook}
@@ -126,7 +122,6 @@ function ProfileLibrary() {
         </Box>
       </Box>
 
-      {/* Вкладочки (Tabs) */}
       <Tabs
         value={activeTab}
         onChange={handleTabChange}
@@ -148,7 +143,6 @@ function ProfileLibrary() {
         />
       </Tabs>
 
-      {/* КОНТЕНТ (ПУСТОЕ СОСТОЯНИЕ) */}
       {books.length === 0 ? (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 8, gap: 3 }}>
           {activeTab === 'my' ? (
@@ -186,7 +180,6 @@ function ProfileLibrary() {
           )}
         </Box>
       ) : (
-        /* КОНТЕНТ (СПИСОК КНИГ) */
         <>
           <Grid container spacing={3}>
             {books.map((book) => {

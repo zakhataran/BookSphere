@@ -6,7 +6,6 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import { useState, useEffect } from 'react';
 
-// Импортируем методы из SDK
 import { 
   getIncomingRequests, 
   getOutgoingRequests, 
@@ -25,15 +24,12 @@ function RequestDetailsPage() {
   const navigate = useNavigate();
   const brandOrange = '#D97706';
   
-  // Достаем контекст чата (id текущего пользователя)
   const { currentUserId, updateReqStatus } = useChatContext();
 
   const [request, setRequest] = useState<BorrowRequestViewDto | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
 
-  // 1. Загружаем данные заявки. Так как отдельного эндпоинта для одной заявки нет, 
-  // мы просто ищем её в общем списке входящих или исходящих.
   useEffect(() => {
     const fetchRequest = async () => {
       setIsLoading(true);
@@ -41,7 +37,6 @@ function RequestDetailsPage() {
         const token = localStorage.getItem('bookSphere_token');
         const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
 
-        // Грузим оба списка параллельно
         const [inRes, outRes] = await Promise.all([
           getIncomingRequests({ headers }),
           getOutgoingRequests({ headers })
@@ -52,7 +47,7 @@ function RequestDetailsPage() {
         
         setRequest(found || null);
       } catch (error) {
-        console.error("Ошибка загрузки заявки:", error);
+        console.error("Error loading request:", error);
       } finally {
         setIsLoading(false);
       }
@@ -61,7 +56,6 @@ function RequestDetailsPage() {
     fetchRequest();
   }, [recordId]);
 
-  // 2. Логика кнопок Одобрить/Отказать
   const handleAction = async (action: 'approve' | 'reject') => {
     setActionLoading(true);
     try {
@@ -76,14 +70,12 @@ function RequestDetailsPage() {
         res = await rejectRequest({ headers, path });
       }
 
-      // 🔥 СТРОГАЯ ПРОВЕРКА: Если бэкенд вернул ошибку, прерываем выполнение!
       if (res.error) {
-        console.error("Ошибка от сервера:", res.error);
-        alert("Не удалось изменить статус. Возможно, нет прав или сессия устарела.");
-        return; // Интерфейс НЕ обновится, обмана не будет
+        console.error("Server error:", res.error);
+        alert("Failed to update status. You may not have permissions or your session has expired.");
+        return;
       }
 
-      // Если дошли сюда — база данных успешно обновлена
       const newStatus = action === 'approve' ? 'APPROVED' : 'REJECTED';
       
       if (request) {
@@ -92,13 +84,12 @@ function RequestDetailsPage() {
       updateReqStatus(recordId, newStatus);
 
     } catch (error) {
-      console.error(`Критическая ошибка при выполнении ${action}:`, error);
+      console.error(`Critical error while executing ${action}:`, error);
     } finally {
       setActionLoading(false);
     }
   };
 
-  // Если грузим
   if (isLoading) {
     return (
       <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -107,38 +98,33 @@ function RequestDetailsPage() {
     );
   }
 
-  // Если заявка не найдена
   if (!request) {
     return (
       <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', p: 3 }}>
-        <Typography variant="h6" sx={{ color: '#6B7280', mb: 2 }}>Заявка не найдена</Typography>
-        <Button onClick={() => navigate({ to: '/home/chats' })} sx={{ color: brandOrange }}>Вернуться</Button>
+        <Typography variant="h6" sx={{ color: '#6B7280', mb: 2 }}>Request not found</Typography>
+        <Button onClick={() => navigate({ to: '/home/chats' })} sx={{ color: brandOrange }}>Return</Button>
       </Box>
     );
   }
 
-  // Определяем, являюсь ли я владельцем книги в этой заявке (входящая) или просящим (исходящая)
   const isIncoming = request.otherUserId !== currentUserId;
 
   return (
     <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', height: '100%' }}>
       
-      {/* Шапка */}
       <Box sx={{ p: 2, bgcolor: 'white', borderBottom: '1px solid #E5E7EB', display: 'flex', alignItems: 'center', gap: 2 }}>
         <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#111827' }}>
-          Детали заявки
+          Request Details
         </Typography>
       </Box>
 
-      {/* Контент заявки */}
       <Box sx={{ flexGrow: 1, overflowY: 'auto', p: { xs: 2, md: 5 }, display: 'flex', justifyContent: 'center', alignItems: 'flex-start' }}>
         <Paper elevation={0} sx={{ width: '100%', maxWidth: 500, borderRadius: 4, p: 4, border: '1px solid #E5E7EB', bgcolor: 'white' }}>
           
           <Typography variant="overline" sx={{ color: brandOrange, fontWeight: 800, mb: 2, display: 'block' }}>
-            {isIncoming ? 'Входящий запрос' : 'Ваш исходящий запрос'}
+            {isIncoming ? 'Incoming Request' : 'Your Outgoing Request'}
           </Typography>
 
-          {/* Инфо о книге */}
           <Box sx={{ display: 'flex', gap: 3, mb: 4 }}>
             <Avatar src={request.bookImageUrl} variant="rounded" sx={{ width: 80, height: 120, bgcolor: '#F3F4F6', border: '1px solid #E5E7EB' }}>
               <MenuBookIcon sx={{ fontSize: 40, color: '#9CA3AF' }} />
@@ -149,24 +135,23 @@ function RequestDetailsPage() {
               </Typography>
               <Typography variant="body2" sx={{ color: '#6B7280', display: 'flex', alignItems: 'center', gap: 0.5 }}>
                 <AccessTimeIcon sx={{ fontSize: 16 }} /> 
-                Срок: <b>{request.requestedDays} дней</b>
+                Period: <b>{request.requestedDays} days</b>
               </Typography>
               <Typography variant="body2" sx={{ color: '#6B7280', mt: 1 }}>
-                Статус: <b>{request.status}</b>
+                Status: <b>{request.status}</b>
               </Typography>
             </Box>
           </Box>
 
           <Divider sx={{ mb: 3 }} />
 
-          {/* Инфо о пользователе */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 4 }}>
             <Avatar src={request.otherUserAvatarUrl} sx={{ width: 48, height: 48, bgcolor: brandOrange, color: 'white' }}>
               {request.otherUserFullName ? request.otherUserFullName[0] : 'U'}
             </Avatar>
             <Box>
               <Typography variant="caption" sx={{ color: '#9CA3AF' }}>
-                {isIncoming ? 'Кто просит:' : 'Владелец:'}
+                {isIncoming ? 'Who is requesting:' : 'Owner:'}
               </Typography>
               <Typography variant="body1" sx={{ fontWeight: 700, color: '#111827' }}>
                 @{request.otherUserFullName}
@@ -174,7 +159,6 @@ function RequestDetailsPage() {
             </Box>
           </Box>
 
-          {/* Кнопки действий (Только для Входящих заявок со статусом PENDING) */}
           {isIncoming && request.status === 'PENDING' && (
             <Box sx={{ display: 'flex', gap: 2, mt: 4 }}>
               <Button 
@@ -184,7 +168,7 @@ function RequestDetailsPage() {
                 disabled={actionLoading}
                 sx={{ bgcolor: '#10B981', color: 'white', '&:hover': { bgcolor: '#059669' }, py: 1.5, borderRadius: 3, fontWeight: 700, boxShadow: 'none' }}
               >
-                Одобрить
+                Approve
               </Button>
               <Button 
                 fullWidth variant="outlined" 
@@ -193,30 +177,29 @@ function RequestDetailsPage() {
                 disabled={actionLoading}
                 sx={{ color: '#EF4444', borderColor: '#FCA5A5', '&:hover': { borderColor: '#EF4444', bgcolor: '#FEF2F2' }, py: 1.5, borderRadius: 3, fontWeight: 700 }}
               >
-                Отказать
+                Reject
               </Button>
             </Box>
           )}
 
-          {/* Информационные сообщения для других статусов */}
           {request.status === 'APPROVED' && (
             <Box sx={{ mt: 4, p: 2, borderRadius: 3, bgcolor: '#D1FAE5', color: '#065F46', display: 'flex', alignItems: 'center', gap: 1.5 }}>
               <CheckCircleIcon />
-              <Typography variant="body2" sx={{ fontWeight: 600 }}>Заявка одобрена. Книга доступна для чтения.</Typography>
+              <Typography variant="body2" sx={{ fontWeight: 600 }}>Request approved. Book available for reading.</Typography>
             </Box>
           )}
 
           {request.status === 'REJECTED' && (
             <Box sx={{ mt: 4, p: 2, borderRadius: 3, bgcolor: '#FEE2E2', color: '#991B1B', display: 'flex', alignItems: 'center', gap: 1.5 }}>
               <CancelIcon />
-              <Typography variant="body2" sx={{ fontWeight: 600 }}>В доступе отказано.</Typography>
+              <Typography variant="body2" sx={{ fontWeight: 600 }}>Request rejected.</Typography>
             </Box>
           )}
 
           {request.status === 'EXPIRED' && (
             <Box sx={{ mt: 4, p: 2, borderRadius: 3, bgcolor: '#F3F4F6', color: '#374151', display: 'flex', alignItems: 'center', gap: 1.5 }}>
               <AccessTimeIcon />
-              <Typography variant="body2" sx={{ fontWeight: 600 }}>Срок аренды истек.</Typography>
+              <Typography variant="body2" sx={{ fontWeight: 600 }}>Request expired.</Typography>
             </Box>
           )}
 

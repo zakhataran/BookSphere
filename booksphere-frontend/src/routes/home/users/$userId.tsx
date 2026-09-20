@@ -15,7 +15,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
-import ChatIcon from '@mui/icons-material/Chat'; // 🔥 Добавили иконку для чата
+import ChatIcon from '@mui/icons-material/Chat';
 
 import { getUserProfile, getUserLibrary } from '../../../api/generated/sdk.gen';
 
@@ -83,7 +83,6 @@ function ForeignUserProfilePage() {
       </Box>
 
       <Container maxWidth="md" sx={{ mt: 4 }}>
-        {/* 2. ИНФОРМАЦИЯ О ПОЛЬЗОВАТЕЛЕ */}
         <Box sx={{ backgroundColor: '#ffffff', borderRadius: 4, p: 4, mb: 4, boxShadow: '0px 4px 20px rgba(0,0,0,0.02)', display: 'flex', alignItems: 'center', gap: 4 }}>
           <Avatar src={profile.avatarUrl} sx={{ width: 100, height: 100, backgroundColor: '#F3F4F6', border: '2px solid #E5E7EB', color: '#9CA3AF', fontSize: 40 }} />
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
@@ -97,7 +96,6 @@ function ForeignUserProfilePage() {
               Books in library: {totalBooks}
             </Typography>
 
-            {/* 🔥 КНОПКА "НАПИСАТЬ" (Только для верифицированных) */}
             {profile.isVerified && profile.id && (
               <Button
                 variant="contained"
@@ -115,13 +113,12 @@ function ForeignUserProfilePage() {
                   '&:hover': { bgcolor: '#B45309', boxShadow: 'none' },
                 }}
               >
-                Написать
+                Write Message
               </Button>
             )}
           </Box>
         </Box>
 
-        {/* 3. БИБЛИОТЕКА ПОЛЬЗОВАТЕЛЯ */}
         <Typography variant="h6" sx={{ fontWeight: 700, color: '#111827', mb: 3 }}>
           Library
         </Typography>

@@ -12,7 +12,7 @@ import {
   Fab,
   LinearProgress,
   Chip,
-  Button, // 🔥 Добавлен импорт Button для новой пагинации
+  Button,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import FilterAltOutlinedIcon from '@mui/icons-material/FilterAltOutlined';
@@ -23,7 +23,6 @@ import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import { type SvgIconProps } from '@mui/material';
 import { useState, useEffect } from 'react';
 
-// 🔥 Добавили getRecentBooks для дефолтного состояния
 import {
   getBooks,
   getRecentBooks,
@@ -59,19 +58,16 @@ export const Route = createFileRoute('/home/')({
 
   loader: async ({ deps: { recentPage, readingPage, searchQuery, categoryId, sort } }) => {
     try {
-      // 🔥 Проверяем, ищет ли пользователь что-то
       const isSearching = searchQuery !== '' || categoryId !== 'all' || sort !== 'newest';
 
-      // Умная загрузка: 30 книг при поиске, 5 книг при простом просмотре
       const booksPromise = isSearching
         ? getBooks({
             query: {
               page: recentPage,
-              size: 30, // Выдаем 30 книг на страницу при поиске
+              size: 30,
               query: searchQuery || undefined,
               categoryIds: categoryId !== 'all' ? [Number(categoryId)] : undefined,
               isAscOrder: sort === 'oldest' || sort === 'az',
-              // sortBy: (sort === 'az' || sort === 'za') ? 'title' : 'createdAt'
             },
           })
         : getRecentBooks({ query: { page: recentPage, size: 5 } }); // 5 книг для слайдера
@@ -116,7 +112,6 @@ function HomePage() {
 
   const [searchValue, setSearchValue] = useState(searchQuery);
 
-  // Вычисляем, находимся ли мы в режиме поиска
   const isSearching = searchQuery !== '' || categoryId !== 'all' || sort !== 'newest';
 
   useEffect(() => {
@@ -192,7 +187,6 @@ function HomePage() {
     },
   };
 
-  // 🔥 Компонент отрисовки сетки книг (5 колонок, автоматически переносит на новые строки)
   const renderBookCards = () => (
     <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 3 }}>
       {displayBooks.map((book) => (
@@ -283,7 +277,6 @@ function HomePage() {
 
   return (
     <Box sx={{ minHeight: '100vh', width: '100%', backgroundColor: '#F6F4F1', pb: 10 }}>
-      {/* HEADER */}
       <Box
         sx={{
           backgroundColor: '#ffffff',
@@ -363,7 +356,6 @@ function HomePage() {
       </Box>
 
       <Box sx={{ maxWidth: 1200, mx: 'auto', mt: 4, px: 4 }}>
-        {/* ФИЛЬТРЫ И ПОИСК */}
         <Box sx={{ display: 'flex', gap: 2, mb: 6 }}>
           <TextField
             value={searchValue}
@@ -451,7 +443,6 @@ function HomePage() {
           </Select>
         </Box>
 
-        {/* СПИСОК КНИГ */}
         <Box sx={{ mb: 6 }}>
           <Typography
             variant="h6"
@@ -471,7 +462,6 @@ function HomePage() {
           </Typography>
 
           {isSearching ? (
-            // 🔥 РЕЖИМ ПОИСКА: Скрываем стрелки по бокам, показываем пагинацию внизу
             <Box>
               {displayBooks.length > 0 ? (
                 renderBookCards()
@@ -518,7 +508,6 @@ function HomePage() {
               )}
             </Box>
           ) : (
-            // 🔥 РЕЖИМ СЛАЙДЕРА: Обычный вид со стрелками
             <Box sx={{ position: 'relative' }}>
               <IconButton
                 onClick={handleRecentPrev}
@@ -565,7 +554,6 @@ function HomePage() {
           )}
         </Box>
 
-        {/* MY READING LIST (🔥 Скрыт, если включен поиск) */}
         {!isSearching && (
           <Box>
             <Typography

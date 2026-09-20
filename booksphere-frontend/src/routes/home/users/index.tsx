@@ -103,7 +103,6 @@ function UsersPage() {
 
   return (
     <Box sx={{ minHeight: '100vh', width: '100%', backgroundColor: '#F6F4F1', pb: 10 }}>
-      {/* HEADER */}
       <Box
         sx={{
           backgroundColor: '#ffffff',
@@ -191,8 +190,6 @@ function UsersPage() {
         </Box>
       </Box>
 
-      {/* ОСНОВНОЙ КОНТЕНТ */}
-      {/* 🔥 Увеличили maxWidth до 1200, чтобы 5 карточек красиво помещались */}
       <Box sx={{ maxWidth: 1200, mx: 'auto', mt: 8, px: 4 }}>
         <Typography
           variant="h4"
@@ -201,7 +198,6 @@ function UsersPage() {
           Find Readers & Friends
         </Typography>
 
-        {/* СТРОКА ПОИСКА */}
         <Box sx={{ display: 'flex', justifyContent: 'center', mb: 6 }}>
           <TextField
             value={searchValue}
@@ -233,7 +229,6 @@ function UsersPage() {
           />
         </Box>
 
-        {/* РЕЗУЛЬТАТЫ ПОИСКА */}
         {searchQuery.trim().length === 0 ? (
           <Box
             sx={{
@@ -254,7 +249,6 @@ function UsersPage() {
             <Box
               sx={{
                 display: 'grid',
-                // 🔥 Теперь у нас адаптивная сетка: до 5 колонок на больших экранах
                 gridTemplateColumns: {
                   xs: '1fr',
                   sm: 'repeat(2, 1fr)',
@@ -276,7 +270,7 @@ function UsersPage() {
                   }
                   elevation={0}
                   sx={{
-                    p: 2, // Слегка уменьшили отступ, чтобы тексту было свободнее
+                    p: 2,
                     display: 'flex',
                     alignItems: 'center',
                     gap: 2,
@@ -323,7 +317,6 @@ function UsersPage() {
               ))}
             </Box>
 
-            {/* ПАГИНАЦИЯ */}
             {totalPages > 1 && (
               <Box
                 sx={{
@@ -367,7 +360,6 @@ function UsersPage() {
         )}
       </Box>
 
-      {/* FAB ЧАТЫ */}
       <Tooltip title="Chats" placement="left" arrow>
         <Fab
           aria-label="chat"

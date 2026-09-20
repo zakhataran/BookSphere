@@ -33,7 +33,7 @@ function NoChatSelected() {
         <ForumOutlinedIcon sx={{ fontSize: 50, color: '#6B7280' }} />
       </Box>
       <Typography variant="h6" sx={{ fontWeight: 700, color: '#6B7280' }}>
-        Чаты не выбраны
+        Chats not selected
       </Typography>
     </Box>
   );

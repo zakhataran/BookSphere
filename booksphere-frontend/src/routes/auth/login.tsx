@@ -263,10 +263,10 @@ function LoginPage() {
               backgroundColor: brandOrange,
               color: 'white',
               borderRadius: 3,
-              textTransform: 'none', // Убираем капс
+              textTransform: 'none',
               fontWeight: 600,
               fontSize: '1rem',
-              py: 1.2, // Увеличиваем высоту кнопки
+              py: 1.2,
               boxShadow: 'none',
               mt: 1,
               '&:hover': {

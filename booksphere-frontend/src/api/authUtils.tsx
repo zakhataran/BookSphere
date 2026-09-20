@@ -1,5 +1,5 @@
-import { useAuthStore } from '../store/authStore'; // Укажите правильный путь к вашему Zustand
-import { refreshToken as apiRefreshToken } from './generated/sdk.gen'; // Путь к сгенерированному API
+import { useAuthStore } from '../store/authStore';
+import { refreshToken as apiRefreshToken } from './generated/sdk.gen';
 
 export async function handleTokenRefresh() {
   const currentRefreshToken = useAuthStore.getState().refreshToken;

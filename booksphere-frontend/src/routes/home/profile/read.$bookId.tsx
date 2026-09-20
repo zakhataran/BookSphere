@@ -39,7 +39,6 @@ function ReadBookPage() {
   const [pageNumber, setPageNumber] = useState<number>(bookMarkPage);
   const [isSaving, setIsSaving] = useState(false);
 
-  // 🔥 ИСПРАВЛЕНИЕ 1: Автоматический скролл наверх при смене страницы
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [pageNumber]);
@@ -59,26 +58,22 @@ function ReadBookPage() {
         body: { currentPage: newPage }
       });
     } catch (error) {
-      console.error("Не удалось сохранить прогресс", error);
+      console.error("Error saving progress:", error);
     } finally {
       setIsSaving(false);
     }
   };
 
-  // 🔥 ИСПРАВЛЕНИЕ 2: Правильный выход с сохранением и инвалидацией кеша
   const handleGoBack = async () => {
     setIsSaving(true);
     try {
-      // На всякий случай сохраняем последнюю страницу перед выходом
       await updateBookStatus({
         path: { bookId: bookId },
         body: { currentPage: pageNumber }
       });
-      // Заставляем роутер сбросить кеш, чтобы в профиле обновились проценты
       await router.invalidate();
     } finally {
       setIsSaving(false);
-      // Возвращаемся в библиотеку
       router.history.back();
     }
   };
@@ -89,10 +84,8 @@ function ReadBookPage() {
   return (
     <Box sx={{ minHeight: '100vh', backgroundColor: '#F6F4F1', pb: 10 }}>
       
-      {/* Шапка читалки */}
       <Box sx={{ backgroundColor: '#ffffff', py: 2, px: 3, boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 10 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          {/* Используем нашу новую функцию выхода */}
           <IconButton onClick={handleGoBack} sx={{ color: '#4B5563' }}>
             <ArrowBackIcon />
           </IconButton>
@@ -104,7 +97,6 @@ function ReadBookPage() {
         {isSaving && <CircularProgress size={20} sx={{ color: '#10B981' }} />}
       </Box>
 
-      {/* Контейнер с PDF */}
       <Container maxWidth="md" sx={{ mt: 4, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <Box sx={{ boxShadow: '0px 10px 25px rgba(0,0,0,0.1)', borderRadius: 2, overflow: 'hidden', backgroundColor: 'white', mb: 4 }}>
           <Document
@@ -126,7 +118,6 @@ function ReadBookPage() {
         </Box>
       </Container>
 
-      {/* 🔥 ИСПРАВЛЕНИЕ 3: Плавающая панель управления (всегда внизу экрана) */}
       {numPages && (
         <Box 
           sx={{ 

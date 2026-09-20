@@ -7,6 +7,7 @@ import org.project.database.repository.UserRepository;
 import org.project.dto.ChatMessageDto;
 import org.project.dto.UserReadDto;
 import org.project.service.ChatMessagesService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +25,10 @@ public class ChatMessagesServiceImpl implements ChatMessagesService {
     @Override
     @Transactional
     public ChatMessageDto saveMessage(ChatMessageDto chatMessageDto) {
+        if (!userRepository.existsById(chatMessageDto.recipientId())) {
+            throw new UsernameNotFoundException("Recipient with id " + chatMessageDto.recipientId() + " was not found");
+        }
+
         ChatMessages message = ChatMessages.builder()
                 .senderId(chatMessageDto.senderId())
                 .recipientId(chatMessageDto.recipientId())

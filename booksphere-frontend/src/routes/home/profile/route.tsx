@@ -53,12 +53,10 @@ function ProfileLayout() {
   const [lastName, setLastName] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
-  // Состояния для подтверждения почты
   const [showVerificationCode, setShowVerificationCode] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
 
-  // Состояния для изменения пароля (Inline-форма)
   const [isResettingPassword, setIsResettingPassword] = useState(false);
   const [showPasswordChangeForm, setShowPasswordChangeForm] = useState(false);
   const [resetCode, setResetCode] = useState('');
@@ -211,7 +209,6 @@ function ProfileLayout() {
     }
   };
 
-  // 🔥 НОВАЯ ФУНКЦИЯ: Обработчик выхода из аккаунта
   const handleLogout = () => {
     localStorage.removeItem('bookSphere_token');
     localStorage.removeItem('bookSphere_refreshToken');
@@ -296,7 +293,6 @@ function ProfileLayout() {
                 </Box>
               </Box>
 
-              {/* 🔥 ИЗМЕНЕНИЕ: Блок с двумя кнопками (Настройки и Выход) */}
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <IconButton 
                   onClick={() => setIsSettingsOpen(true)} 
@@ -431,7 +427,6 @@ function ProfileLayout() {
             </Box>
           )}
 
-          {/* Блок подтверждения почты */}
           {!user.isVerified && !showPasswordChangeForm && (
             <Box sx={{ border: '1px solid #FDE68A', backgroundColor: '#FFFBEB', borderRadius: 2, p: 2, mt: 1 }}>
               <Typography variant="body2" sx={{ color: '#B45309', fontWeight: 500, mb: 1.5 }}>

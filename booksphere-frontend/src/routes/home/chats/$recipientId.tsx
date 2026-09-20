@@ -19,7 +19,6 @@ function ActiveChatPage() {
   const [messages, setMessages] = useState<any[]>([]);
   const [inputText, setInputText] = useState('');
 
-  // 1. Используем сгенерированный типизированный SDK метод вместо fetch
   useEffect(() => {
     const token = localStorage.getItem('bookSphere_token');
     const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
@@ -30,14 +29,47 @@ function ActiveChatPage() {
           setMessages(res.data);
         }
       })
-      .catch((err) => console.error('Ошибка загрузки истории:', err));
+      .catch((err) => console.error('History error:', err));
   }, [recipientId]);
 
   useEffect(() => {
-    if (lastIncomingMessage && lastIncomingMessage.senderId === recipientId) {
-      setMessages((prev) => [...prev, lastIncomingMessage]);
-    }
-  }, [lastIncomingMessage, recipientId]);
+    if (!lastIncomingMessage) return;
+
+    // показываем сообщение, если оно относится к текущему открытому диалогу
+    // (от собеседника нам, либо наше собственное эхо с другого устройства/вкладки)
+    const belongsToThisChat =
+      lastIncomingMessage.senderId === recipientId ||
+      (lastIncomingMessage.senderId === currentUserId && lastIncomingMessage.recipientId === recipientId);
+
+    if (!belongsToThisChat) return;
+
+    setMessages((prev) => {
+      // избегаем дублей: если это эхо нашего же только что отправленного сообщения,
+      // которое уже добавлено оптимистично (совпадает по content+recipientId+без timestamp разницы больше пары секунд)
+      const isDuplicateEcho =
+        lastIncomingMessage.senderId === currentUserId &&
+        prev.some(
+          (m) =>
+            m.senderId === currentUserId &&
+            m.content === lastIncomingMessage.content &&
+            m.recipientId === lastIncomingMessage.recipientId
+        );
+
+      if (isDuplicateEcho) {
+        // заменяем оптимистичную версию на серверную (с настоящим timestamp)
+        return prev.map((m) =>
+          m.senderId === currentUserId &&
+          m.content === lastIncomingMessage.content &&
+          m.recipientId === lastIncomingMessage.recipientId &&
+          !m.confirmed
+            ? { ...lastIncomingMessage, confirmed: true }
+            : m
+        );
+      }
+
+      return [...prev, lastIncomingMessage];
+    });
+  }, [lastIncomingMessage, recipientId, currentUserId]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -46,10 +78,11 @@ function ActiveChatPage() {
   const handleSend = () => {
     if (!inputText.trim() || !stompClient || !stompClient.connected) return;
 
+    const content = inputText.trim();
     const messagePayload = {
       senderId: currentUserId,
       recipientId: recipientId,
-      content: inputText.trim(),
+      content,
     };
 
     stompClient.publish({
@@ -57,7 +90,10 @@ function ActiveChatPage() {
       body: JSON.stringify(messagePayload),
     });
 
-    setMessages((prev) => [...prev, { ...messagePayload, timestamp: new Date().toISOString() }]);
+    setMessages((prev) => [
+      ...prev,
+      { ...messagePayload, timestamp: new Date().toISOString(), confirmed: false },
+    ]);
     setInputText('');
   };
 
@@ -75,7 +111,7 @@ function ActiveChatPage() {
       >
         <Avatar sx={{ bgcolor: brandOrange }}>U</Avatar>
         <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#111827' }}>
-          Диалог
+          Chat
         </Typography>
       </Box>
 
@@ -148,8 +184,13 @@ function ActiveChatPage() {
           fullWidth
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-          placeholder="Напишите сообщение..."
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              handleSend();
+            }
+          }}
+          placeholder="Write a message..."
           variant="outlined"
           size="small"
           sx={{
@@ -170,7 +211,6 @@ function ActiveChatPage() {
             '&.Mui-disabled': { bgcolor: '#F3F4F6', color: '#9CA3AF' },
           }}
         >
-          {/* 🔥 Заменили size="small" на fontSize="small" для корректной типизации SVG-иконки */}
           <SendIcon fontSize="small" />
         </IconButton>
       </Box>

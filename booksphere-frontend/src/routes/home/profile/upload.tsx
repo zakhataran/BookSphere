@@ -4,7 +4,6 @@ import { ArrowLeft, Upload, Search, X, BookOpen, User, Tag, FileText } from 'luc
 import { CircularProgress } from '@mui/material';
 import { uploadBook, previewCover, getAllCategories } from '../../../api/generated/sdk.gen';
 
-// 1. Настраиваем роут и загружаем категории с бэкенда до отрисовки страницы
 export const Route = createFileRoute('/home/profile/upload')({
   loader: async () => {
     try {
@@ -13,7 +12,7 @@ export const Route = createFileRoute('/home/profile/upload')({
       return response.data || [];
     } catch (error) {
       console.error(error);
-      return []; // Если ошибка, возвращаем пустой массив
+      return [];
     }
   },
   component: UploadBookPage,
@@ -25,30 +24,25 @@ function UploadBookPage() {
 
   console.log('МОИ КАТЕГОРИИ ИЗ БЭКЕНДА:', categories);
 
-  // Состояния формы (🔥 Разделили автора на Имя и Фамилию)
   const [title, setTitle] = useState('');
   const [authorFirstName, setAuthorFirstName] = useState('');
   const [authorSecondName, setAuthorSecondName] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<number | ''>('');
   
-  // Состояния для файла и превью
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [isPreviewLoading, setIsPreviewLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Состояния UI
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [categorySearch, setCategorySearch] = useState('');
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Фильтрация категорий
   const filteredCategories = categories.filter((cat: any) => 
     cat.name?.toLowerCase().includes(categorySearch.toLowerCase())
   );
 
-  // Закрытие дропдауна
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
@@ -61,13 +55,12 @@ function UploadBookPage() {
     return () => document.removeEventListener('click', handleClickOutside);
   }, []);
 
-  // Логика загрузки PDF и превью
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     if (file.type !== 'application/pdf') {
-      alert('Пожалуйста, выберите PDF файл');
+      alert('Please upload a valid PDF file.');
       return;
     }
 
@@ -82,14 +75,14 @@ function UploadBookPage() {
       });
 
       if (response.error) {
-        console.error('ОШИБКА СЕРВЕРА:', response.error); 
+        console.error('SERVER ERROR:', response.error); 
         throw new Error('Preview failed');
       }
       
       setCoverPreview((response.data as any).coverUrl); 
     } catch (error) {
       console.error('Failed to generate preview', error);
-      alert('Не удалось сгенерировать превью обложки');
+      alert('Failed to generate cover preview. Please try again.');
       setCoverPreview(null);
     } finally {
       setIsPreviewLoading(false);
@@ -104,12 +97,11 @@ function UploadBookPage() {
     }
   };
 
-  // Логика отправки
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!pdfFile || !selectedCategory) {
-      alert('Пожалуйста, заполните все поля и прикрепите PDF файл');
+      alert('Please fill in all fields and attach a PDF file');
       return;
     }
 
@@ -119,7 +111,7 @@ function UploadBookPage() {
       const response = await uploadBook({
         body: {
           title: title,
-          authorFirstName: authorFirstName, // 🔥 Отправляем новые поля
+          authorFirstName: authorFirstName,
           authorSecondName: authorSecondName,
           categoryId: selectedCategory as number,
           file: pdfFile
@@ -130,12 +122,11 @@ function UploadBookPage() {
         throw new Error('Failed to upload book');
       }
 
-      // 🔥 Фикс TanStack Router: добавляем search={{ page: 0 }}
       router.navigate({ to: '/home/profile', search: { page: 0 } });
       
     } catch (error) {
       console.error('Upload error:', error);
-      alert('Произошла ошибка при загрузке книги');
+      alert('An error occurred while uploading the book');
     } finally {
       setIsSubmitting(false);
     }
@@ -146,7 +137,6 @@ function UploadBookPage() {
       <header className="bg-white shadow-sm border-b border-gray-100">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between h-16">
-            {/* 🔥 Фикс TanStack Router: добавляем search={{ page: 0 }} */}
             <Link 
               to="/home/profile" 
               search={{ page: 0 }}
@@ -167,7 +157,7 @@ function UploadBookPage() {
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
             <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
               <FileText className="w-5 h-5 text-amber-600" />
-              Файл книги (PDF)
+              Book's PDF File
             </h2>
             <div className="flex flex-col sm:flex-row gap-6">
               
@@ -176,7 +166,7 @@ function UploadBookPage() {
                   {isPreviewLoading ? (
                     <div className="flex flex-col items-center">
                       <CircularProgress size={24} sx={{ color: '#D97706', mb: 1 }} />
-                      <span className="text-xs text-gray-500 mt-2">Генерация...</span>
+                      <span className="text-xs text-gray-500 mt-2">Generating...</span>
                     </div>
                   ) : coverPreview ? (
                     <div className="relative w-full h-full group">
@@ -196,9 +186,9 @@ function UploadBookPage() {
                   ) : (
                     <div className="text-center p-4">
                       <BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-2" />
-                      <span className="text-xs text-gray-400">Нет файла</span>
+                      <span className="text-xs text-gray-400">No file uploaded</span>
                       <span className="block text-[10px] text-gray-400 mt-1 text-center">
-                        Выберите PDF
+                        Please select a PDF file
                       </span>
                     </div>
                   )}
@@ -219,7 +209,7 @@ function UploadBookPage() {
                   className="flex items-center justify-center gap-2 px-6 py-3 bg-amber-500 text-white rounded-xl hover:bg-amber-600 transition-colors font-medium"
                 >
                   <Upload className="w-5 h-5" />
-                  Загрузить PDF
+                  Upload PDF
                 </button>
                 {pdfFile && (
                   <p className="text-sm font-medium text-gray-700 mt-3 text-center truncate">
@@ -227,7 +217,7 @@ function UploadBookPage() {
                   </p>
                 )}
                 <p className="text-sm text-gray-500 mt-2 text-center">
-                  Только PDF файлы. Обложка извлекается автоматически.
+                  Only PDF files. Cover is generated automatically.
                 </p>
               </div>
             </div>
@@ -236,12 +226,12 @@ function UploadBookPage() {
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-5">
             <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
               <BookOpen className="w-5 h-5 text-amber-600" />
-              Информация о книге
+              Book Information
             </h2>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Название книги *
+                Book Title *
               </label>
               <div className="relative">
                 <BookOpen className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -250,7 +240,7 @@ function UploadBookPage() {
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   required
-                  placeholder="Введите название книги"
+                  placeholder="Enter book title"
                   className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all text-gray-900 placeholder-gray-400"
                 />
               </div>
@@ -260,7 +250,7 @@ function UploadBookPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Имя автора *
+                  Author's First Name *
                 </label>
                 <div className="relative">
                   <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -269,7 +259,7 @@ function UploadBookPage() {
                     value={authorFirstName}
                     onChange={(e) => setAuthorFirstName(e.target.value)}
                     required
-                    placeholder="Например: Джордж"
+                    placeholder="For example: George"
                     className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all text-gray-900 placeholder-gray-400"
                   />
                 </div>
@@ -277,7 +267,7 @@ function UploadBookPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Фамилия автора *
+                  Author's Last Name *
                 </label>
                 <div className="relative">
                   <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -286,7 +276,7 @@ function UploadBookPage() {
                     value={authorSecondName}
                     onChange={(e) => setAuthorSecondName(e.target.value)}
                     required
-                    placeholder="Например: Оруэлл"
+                    placeholder="For example: Orwell"
                     className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all text-gray-900 placeholder-gray-400"
                   />
                 </div>
@@ -295,7 +285,7 @@ function UploadBookPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Категория *
+                Category *
               </label>
               <div className="relative category-dropdown">
                 <Tag className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 z-10" />
@@ -310,7 +300,7 @@ function UploadBookPage() {
                   <span className={selectedCategory ? 'text-gray-900' : 'text-gray-400'}>
                     {selectedCategory 
                       ? categories.find((c: any) => c.categoryId === selectedCategory)?.name 
-                      : 'Выберите категорию'}
+                      : 'Select a category'}
                   </span>
                   <svg 
                     className={`w-5 h-5 text-gray-400 transition-transform ${showCategoryDropdown ? 'rotate-180' : ''}`} 
@@ -331,7 +321,7 @@ function UploadBookPage() {
                           type="text"
                           value={categorySearch}
                           onChange={(e) => setCategorySearch(e.target.value)}
-                          placeholder="Поиск категории..."
+                          placeholder="Search category..."
                           className="w-full pl-10 pr-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-amber-500"
                           autoFocus
                         />
@@ -359,7 +349,7 @@ function UploadBookPage() {
                         ))
                       ) : (
                         <div className="px-4 py-3 text-sm text-gray-500 text-center">
-                          Категории не найдены
+                          Categories not found
                         </div>
                       )}
                     </div>
@@ -370,13 +360,12 @@ function UploadBookPage() {
           </div>
 
           <div className="flex gap-4 pb-10">
-            {/* 🔥 Фикс TanStack Router: добавляем search={{ page: 0 }} */}
             <Link
               to="/home/profile"
               search={{ page: 0 }}
               className="flex-1 px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors font-medium text-center"
             >
-              Отмена
+              Cancel
             </Link>
             <button
               type="submit"
@@ -386,10 +375,10 @@ function UploadBookPage() {
               {isSubmitting ? (
                 <>
                   <CircularProgress size={20} color="inherit" />
-                  Загрузка...
+                  Uploading...
                 </>
               ) : (
-                'Опубликовать книгу'
+                'Publish Book'
               )}
             </button>
           </div>
