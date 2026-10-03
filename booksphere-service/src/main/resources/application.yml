@@ -10,9 +10,9 @@ spring:
     locations: classpath:db.migration
 
   datasource:
-    url: jdbc:postgresql://localhost:5433/booksphere
-    username: postgres
-    password: postgres
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5433}/${DB_NAME:booksphere}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -25,8 +25,8 @@ spring:
         default_schema: book_sphere
   data:
     redis:
-      host: localhost
-      port: 6379
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
 
   redis:
     verification:
@@ -36,21 +36,21 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:8080/realms/BookSphere
-          jwk-set-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}/protocol/openid-connect/certs
+          issuer-uri: ${KEYCLOAK_ISSUER_UEL:http://localhost:8080/realms/BookSphere}
+          jwk-set-uri: ${KEYCLOAK_JWK_URI:http://localhost:8080/realms/BookSphere/protocol/openid-connect/certs}
 
   keycloak:
     rest:
       realm: BookSphere
       client-id: booksphere-rest-api
-      client-secret: 7OJNdX4lOrI70qv3BnzRGDHxWLx2LipV
-      token-uri: http://localhost:8080
+      client-secret: ${KEYCLOAK_CLIENT_SECRET:7OJNdX4lOrI70qv3BnzRGDHxWLx2LipV}
+      token-uri: ${KEYCLOAK_URL:http://localhost:8080}
 
   mail:
     host: smtp.gmail.com
     port: 587
-    username: book.sphere.api@gmail.com
-    password: wwso vcoa rpsy akew
+    username: ${MAIL_USERNAME:book.sphere.api@gmail.com}
+    password: ${MAIL_PASSWORD:wwso vcoa rpsy akew}
     properties:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
@@ -61,10 +61,9 @@ spring:
       max-request-size: 110MB
 
 minio:
-#  url: http://minio:9000
-  url: http://localhost:9000
-  accessKey: admin
-  secretKey: password
+  url: ${MINIO_URL:http://localhost:9000}
+  accessKey: ${MINIO_ACCESS_KEY:admin}
+  secretKey: ${MINIO_SECRET_KEY:password}
   bucket-name: user-image-bucket
   secure: false
 

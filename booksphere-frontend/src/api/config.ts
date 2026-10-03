@@ -3,7 +3,7 @@ import { useAuthStore } from '../store/authStore';
 import { handleTokenRefresh } from './authUtils';
 
 client.setConfig({
-  baseUrl: 'http://localhost:8081',
+  baseUrl: import.meta.env.VITE_API_URL || 'http://localhost:8081',
 });
 
 client.interceptors.request.use((request) => {

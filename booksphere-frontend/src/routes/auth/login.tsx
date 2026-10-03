@@ -95,6 +95,8 @@ function LoginPage() {
 
       if (response.data?.access_token && response.data?.refresh_token) {
         authStoreLogin(response.data.access_token, response.data.refresh_token);
+        localStorage.setItem('bookSphere_token', response.data.access_token);
+        localStorage.setItem('bookSphere_refreshToken', response.data.refresh_token);
         toast.success('Successful login!');
         navigate({ to: '/home', search: { searchQuery: '', categoryId: 'all', sort: 'newest', recentPage: 0, readingPage: 0 } });
       }

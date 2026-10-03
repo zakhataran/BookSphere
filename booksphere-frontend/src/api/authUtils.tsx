@@ -6,7 +6,6 @@ export async function handleTokenRefresh() {
 
   if (!currentRefreshToken) {
     useAuthStore.getState().logout();
-    window.location.href = '/auth/login';
     return null;
   }
 
@@ -35,7 +34,6 @@ export async function handleTokenRefresh() {
 
   } catch (error) {
     useAuthStore.getState().logout();
-    window.location.href = '/auth/login';
     return null;
   }
 }
