@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: booksphere-backend
+  namespace: booksphere
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      enableServiceLinks: false
+      containers:
+        - name: backend
+          image: booksphere-backend:1.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8081
+          env:
+            - name: DB_HOST
+              value: "book-sphere-data-base"
+            - name: DB_PORT
+              value: "5432"
+            - name: REDIS_HOST
+              value: "redis"
+            - name: MINIO_URL
+              value: "http://minio:9000"
+            - name: KEYCLOAK_URL
+              value: "http://keycloak:8080"
+            - name: KEYCLOAK_ISSUER_URL
+              value: "http://localhost:8080"
+            - name: KEYCLOAK_JWK_URI
+              value: "http://keycloak:8080/realms/BookSphere/protocol/openid-connect/certs"
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: booksphere-backend
+  namespace: booksphere
+spec:
+  type: LoadBalancer
+  selector:
+    app: backend
+  ports:
+    - protocol: TCP
+      port: 8081
+      targetPort: 8081

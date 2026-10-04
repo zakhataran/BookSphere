@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keycloak
+  namespace: booksphere
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: keycloak
+  template:
+    metadata:
+      labels:
+        app: keycloak
+    spec:
+      containers:
+        - name: keycloak
+          image: quay.io/keycloak/keycloak:26.2.5
+          args: ["start-dev", "--import-realm"]
+          ports:
+            - containerPort: 8080
+          env:
+            - name: KC_BOOTSTRAP_ADMIN_USERNAME
+              value: "admin"
+            - name: KC_BOOTSTRAP_ADMIN_PASSWORD
+              value: "admin"
+            - name: KC_HOSTNAME
+              value: "http://localhost:8080"
+            - name: KC_DB
+              value: "postgres"
+            - name: KC_DB_USERNAME
+              value: "postgres"
+            - name: KC_DB_PASSWORD
+              value: "postgres"
+            - name: KC_DB_URL
+              value: "jdbc:postgresql://book-sphere-data-base:5432/booksphere"
+            - name: KC_ADMIN_URL
+              value: "http://127.0.0.1:8080"
+            - name: KC_DB_SCHEMA
+              value: "keycloak_schema"
+          volumeMounts:
+            - name: keycloak-import
+              mountPath: /opt/keycloak/data/import
+      volumes:
+        - name: keycloak-import
+          configMap:
+            name: keycloak-realm-config
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: keycloak
+  namespace: booksphere
+spec:
+  type: LoadBalancer
+  selector:
+    app: keycloak
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080

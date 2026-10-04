@@ -1,0 +1,80 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-init-script
+  namespace: booksphere
+data:
+  01-keycloak.sql: |
+    CREATE SCHEMA IF NOT EXISTS keycloak_schema;
+    GRANT ALL PRIVILEGES ON SCHEMA keycloak_schema TO postgres;
+    GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA keycloak_schema TO postgres;
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+  namespace: booksphere
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: book-sphere-data-base
+  namespace: booksphere
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16.1
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              value: "booksphere"
+            - name: POSTGRES_USER
+              value: "postgres"
+            - name: POSTGRES_PASSWORD
+              value: "postgres"
+          args: ["postgres", "-c", "max_connections=200"]
+          volumeMounts:
+            - name: postgres-storage
+              mountPath: /var/lib/postgresql/data
+            - name: init-script
+              mountPath: /docker-entrypoint-initdb.d/01-keycloak.sql
+              subPath: 01-keycloak.sql
+      volumes:
+        - name: postgres-storage
+          persistentVolumeClaim:
+            claimName: postgres-pvc
+        - name: init-script
+          configMap:
+            name: postgres-init-script
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: book-sphere-data-base
+  namespace: booksphere
+spec:
+  selector:
+    app: postgres
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
