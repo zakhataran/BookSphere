@@ -2,6 +2,7 @@ package org.project.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import org.project.validation.ValidPassword;
 
 public record UserCreateDto(
         @NotBlank
@@ -12,6 +13,7 @@ public record UserCreateDto(
         String email,
 
         @NotBlank
+        @ValidPassword
         String password,
 
         @NotBlank
