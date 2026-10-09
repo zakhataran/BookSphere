@@ -19,6 +19,8 @@ import MailOutlineIcon from '@mui/icons-material/MailOutline';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 
 export const Route = createFileRoute('/auth/register')({
   component: RegistrationPage,
@@ -29,34 +31,47 @@ const registrationSchema = z.object({
   lastName: z.string().min(2, 'Last name must be at least 2 characters'),
   username: z.string().min(3, 'Username must be at least 3 characters'),
   email: z.string().min(1, 'Enter email').email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  password: z.string().regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{8,}$/, "Password does not meet requirements"),
 });
 
 type RegisterFormInput = z.infer<typeof registrationSchema>;
+
+const PasswordRequirements = ({ password = '' }: { password?: string }) => {
+  const criteria = [
+    { label: 'Must be at least 8 characters', met: password.length >= 8 },
+    { label: 'At least one lowercase letter', met: /[a-z]/.test(password) },
+    { label: 'At least one uppercase letter', met: /[A-Z]/.test(password) },
+    { label: 'At least one special character', met: /[^a-zA-Z0-9]/.test(password) },
+    { label: 'At least one number', met: /\d/.test(password) },
+  ];
+
+  return (
+    <Box sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: 0.5, pl: 1 }}>
+      {criteria.map((c, i) => (
+        <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          {c.met ? (
+            <CheckCircleIcon sx={{ fontSize: 14, color: '#22c55e' }} />
+          ) : (
+            <FiberManualRecordIcon sx={{ fontSize: 8, color: '#ef4444', ml: '3px', mr: '3px' }} />
+          )}
+          <Typography variant="caption" sx={{ color: c.met ? '#22c55e' : '#ef4444', fontWeight: 500 }}>
+            {c.label}
+          </Typography>
+        </Box>
+      ))}
+    </Box>
+  );
+};
 
 function CustomLogoIcon(_props: SvgIconProps) {
   return (
     <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
       <g clip-path="url(#clip0_13_2)">
-        <path
-          d="M0.909119 1.81818H6.36366C7.32809 1.81818 8.25301 2.20129 8.93496 2.88324C9.61691 3.56519 10 4.49012 10 5.45454V18.1818C10 17.4585 9.71269 16.7648 9.20123 16.2533C8.94798 16.0001 8.64732 15.7992 8.31644 15.6621C7.98555 15.5251 7.63091 15.4545 7.27275 15.4545H0.909119V1.81818Z"
-          stroke="white"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        />
-        <path
-          d="M19.0909 1.81818H13.6364C12.6719 1.81818 11.747 2.20129 11.0651 2.88324C10.3831 3.56519 10 4.49012 10 5.45454V18.1818C10 17.4585 10.2873 16.7648 10.7988 16.2533C11.3103 15.7419 12.004 15.4545 12.7273 15.4545H19.0909V1.81818Z"
-          stroke="white"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        />
+        <path d="M0.909119 1.81818H6.36366C7.32809 1.81818 8.25301 2.20129 8.93496 2.88324C9.61691 3.56519 10 4.49012 10 5.45454V18.1818C10 17.4585 9.71269 16.7648 9.20123 16.2533C8.94798 16.0001 8.64732 15.7992 8.31644 15.6621C7.98555 15.5251 7.63091 15.4545 7.27275 15.4545H0.909119V1.81818Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        <path d="M19.0909 1.81818H13.6364C12.6719 1.81818 11.747 2.20129 11.0651 2.88324C10.3831 3.56519 10 4.49012 10 5.45454V18.1818C10 17.4585 10.2873 16.7648 10.7988 16.2533C11.3103 15.7419 12.004 15.4545 12.7273 15.4545H19.0909V1.81818Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
       </g>
       <defs>
-        <clipPath id="clip0_13_2">
-          <rect width="20" height="20" fill="white" />
-        </clipPath>
+        <clipPath id="clip0_13_2"><rect width="20" height="20" fill="white" /></clipPath>
       </defs>
     </svg>
   );
@@ -79,11 +94,13 @@ function RegistrationPage() {
       email: '',
       password: '',
     },
+    mode: 'onChange',
   });
+
+  const passwordValue = form.watch('password');
 
   const onSubmit = async (data: RegisterFormInput) => {
     try {
-      console.log('Registration data:', data);
       const response = await registerApi({
         body: {
           firstName: data.firstName,
@@ -102,7 +119,7 @@ function RegistrationPage() {
       toast.success('Registration successful! Please log in.');
       navigate({ to: '/auth/login' });
     } catch (error) {
-      toast.error('Error occurred while registering:');
+      toast.error('Error occurred while registering');
     }
   };
 
@@ -114,146 +131,54 @@ function RegistrationPage() {
       '&:hover fieldset': { borderColor: '#ced4da' },
       '&.Mui-focused fieldset': { borderColor: brandOrange },
     },
-    '& input::placeholder': {
-      fontWeight: 600,
-    },
+    '& input::placeholder': { fontWeight: 600 },
   };
 
   const labelStyles = { fontWeight: 600, color: '#374151', display: 'block', mb: 0.5 };
 
   return (
-    <Box
-      sx={{
-        minHeight: '100vh',
-        width: '100%',
-        backgroundColor: '#F6F4F1',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        paddingBottom: 4,
-        margin: 0,
-        justifyContent: 'center',
-        boxSizing: 'border-box',
-      }}
-    >
+    <Box sx={{ minHeight: '100vh', width: '100%', backgroundColor: '#F6F4F1', display: 'flex', flexDirection: 'column', alignItems: 'center', paddingBottom: 4, margin: 0, justifyContent: 'center', boxSizing: 'border-box' }}>
       <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 2 }}>
-        <Box
-          sx={{
-            backgroundColor: brandOrange,
-            borderRadius: 3,
-            p: 1.5,
-            mb: 2,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
+        <Box sx={{ backgroundColor: brandOrange, borderRadius: 3, p: 1.5, mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <CustomLogoIcon sx={{ color: 'white', fontSize: 32 }} />
         </Box>
-        <Typography variant="h5" sx={{ fontWeight: 700, color: '#000000' }}>
-          BookSphere
-        </Typography>
-        <Typography variant="body2" sx={{ color: '#6b7280', mt: 0.5, fontSize: '1rem' }}>
-          Upload & manage your books
-        </Typography>
+        <Typography variant="h5" sx={{ fontWeight: 700, color: '#000000' }}>BookSphere</Typography>
+        <Typography variant="body2" sx={{ color: '#6b7280', mt: 0.5, fontSize: '1rem' }}>Upload & manage your books</Typography>
       </Box>
 
-      <Card
-        component="form"
-        onSubmit={form.handleSubmit(onSubmit)}
-        noValidate
-        sx={{
-          width: '100%',
-          maxWidth: 400,
-          borderRadius: 5,
-          boxShadow: '0px 8px 24px rgba(0, 0, 0, 0.2)',
-          p: { xs: 2, sm: 4 },
-        }}
-      >
-        <Typography variant="h6" sx={{ fontWeight: 600, mb: 3, color: '#374151' }}>
-          Create new account
-        </Typography>
+      <Card component="form" onSubmit={form.handleSubmit(onSubmit)} noValidate sx={{ width: '100%', maxWidth: 400, borderRadius: 5, boxShadow: '0px 8px 24px rgba(0, 0, 0, 0.2)', p: { xs: 2, sm: 4 } }}>
+        <Typography variant="h6" sx={{ fontWeight: 600, mb: 3, color: '#374151' }}>Create new account</Typography>
 
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
           <Box>
-            <Typography variant="caption" sx={labelStyles}>
-              First name
-            </Typography>
-            <TextField
-              {...form.register('firstName')}
-              placeholder="Joe"
-              variant="outlined"
-              fullWidth
-              error={!!form.formState.errors.firstName}
-              helperText={form.formState.errors.firstName?.message}
-              sx={textFieldStyles}
-            />
+            <Typography variant="caption" sx={labelStyles}>First name</Typography>
+            <TextField {...form.register('firstName')} placeholder="Joe" variant="outlined" fullWidth error={!!form.formState.errors.firstName} helperText={form.formState.errors.firstName?.message} sx={textFieldStyles} />
           </Box>
 
           <Box>
-            <Typography variant="caption" sx={labelStyles}>
-              Last name
-            </Typography>
-            <TextField
-              {...form.register('lastName')}
-              placeholder="Harper"
-              variant="outlined"
-              fullWidth
-              error={!!form.formState.errors.lastName}
-              helperText={form.formState.errors.lastName?.message}
-              sx={textFieldStyles}
-            />
+            <Typography variant="caption" sx={labelStyles}>Last name</Typography>
+            <TextField {...form.register('lastName')} placeholder="Harper" variant="outlined" fullWidth error={!!form.formState.errors.lastName} helperText={form.formState.errors.lastName?.message} sx={textFieldStyles} />
           </Box>
 
           <Box>
-            <Typography variant="caption" sx={labelStyles}>
-              Username
-            </Typography>
-            <TextField
-              {...form.register('username')}
-              placeholder="user1234"
-              variant="outlined"
-              fullWidth
-              error={!!form.formState.errors.username}
-              helperText={form.formState.errors.username?.message}
-              sx={textFieldStyles}
-            />
+            <Typography variant="caption" sx={labelStyles}>Username</Typography>
+            <TextField {...form.register('username')} placeholder="user1234" variant="outlined" fullWidth error={!!form.formState.errors.username} helperText={form.formState.errors.username?.message} sx={textFieldStyles} />
           </Box>
 
           <Box>
-            <Typography variant="caption" sx={labelStyles}>
-              Email
-            </Typography>
-            <TextField
-              {...form.register('email')}
-              placeholder="you@example.com"
-              variant="outlined"
-              fullWidth
-              error={!!form.formState.errors.email}
-              helperText={form.formState.errors.email?.message}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <MailOutlineIcon sx={{ color: '#adb5bd', fontSize: 20 }} />
-                  </InputAdornment>
-                ),
-              }}
-              sx={textFieldStyles}
-            />
+            <Typography variant="caption" sx={labelStyles}>Email</Typography>
+            <TextField {...form.register('email')} placeholder="you@example.com" variant="outlined" fullWidth error={!!form.formState.errors.email} helperText={form.formState.errors.email?.message} InputProps={{ startAdornment: (<InputAdornment position="start"> <MailOutlineIcon sx={{ color: '#adb5bd', fontSize: 20 }} /> </InputAdornment>), }} sx={textFieldStyles} />
           </Box>
 
           <Box>
-            <Typography variant="caption" sx={labelStyles}>
-              Password
-            </Typography>
+            <Typography variant="caption" sx={labelStyles}>Password</Typography>
             <TextField
               {...form.register('password')}
               placeholder="••••••••"
               type={showPassword ? 'text' : 'password'}
               variant="outlined"
               fullWidth
-              error={!!form.formState.errors.password}
-              helperText={form.formState.errors.password?.message}
+              error={!!form.formState.errors.password && !passwordValue}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -262,65 +187,24 @@ function RegistrationPage() {
                 ),
                 endAdornment: (
                   <InputAdornment position="end">
-                    <IconButton
-                      onClick={handleClickShowPassword}
-                      edge="end"
-                      sx={{ color: '#adb5bd' }}
-                    >
-                      {showPassword ? (
-                        <VisibilityOff sx={{ fontSize: 20 }} />
-                      ) : (
-                        <Visibility sx={{ fontSize: 20 }} />
-                      )}
+                    <IconButton onClick={handleClickShowPassword} edge="end" sx={{ color: '#adb5bd' }}>
+                      {showPassword ? <VisibilityOff sx={{ fontSize: 20 }} /> : <Visibility sx={{ fontSize: 20 }} />}
                     </IconButton>
                   </InputAdornment>
                 ),
               }}
               sx={textFieldStyles}
             />
+            <PasswordRequirements password={passwordValue} />
           </Box>
 
-          <Button
-            type="submit"
-            disabled={form.formState.isSubmitting}
-            fullWidth
-            sx={{
-              backgroundColor: brandOrange,
-              color: 'white',
-              borderRadius: 3,
-              textTransform: 'none',
-              fontWeight: 600,
-              fontSize: '1rem',
-              py: 1.2,
-              boxShadow: 'none',
-              mt: 1,
-              '&:hover': {
-                backgroundColor: '#b45309',
-                boxShadow: 'none',
-              },
-            }}
-          >
+          <Button type="submit" disabled={form.formState.isSubmitting} fullWidth sx={{ backgroundColor: brandOrange, color: 'white', borderRadius: 3, textTransform: 'none', fontWeight: 600, fontSize: '1rem', py: 1.2, boxShadow: 'none', mt: 1, '&:hover': { backgroundColor: '#b45309', boxShadow: 'none' } }}>
             {form.formState.isSubmitting ? 'Creating account...' : 'Sign Up'}
           </Button>
         </Box>
       </Card>
 
-      <Typography
-        variant="body2"
-        sx={{
-          mt: 4,
-          color: '#615575',
-          '& a': {
-            color: brandOrange,
-            textDecoration: 'none',
-            fontWeight: 500,
-            transition: 'color 0.2s',
-          },
-          '& a:hover': {
-            color: '#b4532a',
-          },
-        }}
-      >
+      <Typography variant="body2" sx={{ mt: 4, color: '#615575', '& a': { color: brandOrange, textDecoration: 'none', fontWeight: 500, transition: 'color 0.2s', }, '& a:hover': { color: '#b4532a', }, }}>
         Already have an account?
         <Link to="/auth/login"> Log in</Link>
       </Typography>

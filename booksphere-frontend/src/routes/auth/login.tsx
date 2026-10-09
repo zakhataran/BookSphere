@@ -27,7 +27,7 @@ export const Route = createFileRoute('/auth/login')({
 
 const loginSchema = z.object({
   email: z.string().min(1, 'Enter email').email('Enter valid email address'),
-  password: z.string().min(6, 'Password must contain at least 6 characters'),
+  password: z.string().min(8, 'Password must contain at least 8 characters'),
 });
 
 function CustomLogoIcon(_props: SvgIconProps) {
