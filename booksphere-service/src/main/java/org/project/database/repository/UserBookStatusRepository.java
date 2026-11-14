@@ -29,4 +29,9 @@ public interface UserBookStatusRepository extends JpaRepository<UserBookStatus, 
     Optional<UserBookStatus> findUserBookStatusByUserIdAndBookId(UUID userId, UUID bookId);
 
     Page<UserBookStatus> findByUserAndReadingStatus(User user, ReadingStatus readingStatus, Pageable pageable);
+
+    List<UserBookStatus> findTop5ByUserIdAndReadingStatusInOrderByUpdatedAtDesc(UUID userId, List<ReadingStatus> readingStatuses);
+
+    @Query("select s.book.id from UserBookStatus s where s.user.id = :userId")
+    List<UUID> findBookIdsByUserId(@Param("userId") UUID userId);
 }

@@ -50,4 +50,15 @@ public class RedisServiceImpl implements RedisService {
 
         return false;
     }
+
+    @Override
+    public boolean tryAcquire(String key, int limit, Duration window) {
+        Long count = redisTemplate.opsForValue().increment(key);
+        if (count == null) return false;
+        if (count == 1L || Long.valueOf(-1L).equals(redisTemplate.getExpire(key))) {
+            redisTemplate.expire(key, window);
+        }
+
+        return count <= limit;
+    }
 }

@@ -1,5 +1,6 @@
 package org.project.dto;
 
+import java.util.List;
 import java.util.UUID;
 
 public record BookSearchDto(
@@ -7,6 +8,6 @@ public record BookSearchDto(
         String title,
         String author,
         String imageUrl,
-        Long categoryId,
+        List<CategoryReadDto> categories,
         String uploaderUsername
 ) {}

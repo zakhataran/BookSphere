@@ -63,7 +63,7 @@ function ProfileLibrary() {
   const libraryData = Route.useLoaderData();
   const { page: currentPage, tab: activeTab } = Route.useSearch();
   const navigate = useNavigate();
-  
+
   const books = libraryData?.content || [];
   const totalPages = libraryData?.customPage?.totalPage || 0;
   const totalBooks = libraryData?.customPage?.totalElements || 0;
@@ -125,21 +125,21 @@ function ProfileLibrary() {
       <Tabs
         value={activeTab}
         onChange={handleTabChange}
-        sx={{ 
-          mb: 4, 
+        sx={{
+          mb: 4,
           borderBottom: '1px solid #E5E7EB',
-          '& .MuiTabs-indicator': { backgroundColor: brandOrange, height: 3, borderRadius: '3px 3px 0 0' } 
+          '& .MuiTabs-indicator': { backgroundColor: brandOrange, height: 3, borderRadius: '3px 3px 0 0' }
         }}
       >
-        <Tab 
-          value="my" 
-          label="My Books" 
-          sx={{ '&.Mui-selected': { color: brandOrange }, fontWeight: 700, textTransform: 'none', fontSize: 16 }} 
+        <Tab
+          value="my"
+          label="My Books"
+          sx={{ '&.Mui-selected': { color: brandOrange }, fontWeight: 700, textTransform: 'none', fontSize: 16 }}
         />
-        <Tab 
-          value="borrowed" 
-          label="Borrowed" 
-          sx={{ '&.Mui-selected': { color: brandOrange }, fontWeight: 700, textTransform: 'none', fontSize: 16 }} 
+        <Tab
+          value="borrowed"
+          label="Borrowed"
+          sx={{ '&.Mui-selected': { color: brandOrange }, fontWeight: 700, textTransform: 'none', fontSize: 16 }}
         />
       </Tabs>
 
@@ -222,12 +222,24 @@ function ProfileLibrary() {
                         <Typography variant="body2" sx={{ color: '#6B7280' }}>
                           {book.authorFullName}
                         </Typography>
-                        {book.categoryName && (
-                          <Chip
-                            label={book.categoryName}
-                            size="small"
-                            sx={{ height: 20, fontSize: '0.7rem', backgroundColor: '#FEF3C7', color: brandOrange, fontWeight: 500 }}
-                          />
+
+                        {book.categories && book.categories.length > 0 && (
+                          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
+                            {book.categories.map((category) => (
+                              <Chip
+                                key={category.categoryId}
+                                label={category.name}
+                                size="small"
+                                sx={{
+                                  height: 20,
+                                  fontSize: '0.7rem',
+                                  backgroundColor: '#FEF3C7',
+                                  color: brandOrange,
+                                  fontWeight: 500,
+                                }}
+                              />
+                            ))}
+                          </Box>
                         )}
                       </Box>
 

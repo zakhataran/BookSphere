@@ -22,8 +22,4 @@ public class Category {
 
     @Column(name = "name", length = 100, nullable = false)
     String name;
-
-    @OneToMany(mappedBy = "category", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @Builder.Default
-    List<Book> books = new ArrayList<>();
 }

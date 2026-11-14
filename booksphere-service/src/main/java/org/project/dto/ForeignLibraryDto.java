@@ -3,6 +3,7 @@ package org.project.dto;
 import org.project.database.entity.enums.ReadingStatus;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 
 public record ForeignLibraryDto(
@@ -10,7 +11,7 @@ public record ForeignLibraryDto(
         String title,
         String authorFullName,
         String imageUrl,
-        String categoryName,
+        List<CategoryReadDto> categories,
         ReadingStatus readingStatus,
         BigDecimal readPercentage
 ) {}

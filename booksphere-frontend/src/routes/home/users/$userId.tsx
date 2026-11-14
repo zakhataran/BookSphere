@@ -151,7 +151,7 @@ function ForeignUserProfilePage() {
                         </Typography>
                         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 1, mb: 'auto' }}>
                           <Typography variant="body2" sx={{ color: '#6B7280' }}>{book.authorFullName}</Typography>
-                          {book.categoryName && <Chip label={book.categoryName} size="small" sx={{ height: 20, fontSize: '0.7rem', backgroundColor: '#FEF3C7', color: brandOrange, fontWeight: 600 }} />}
+                          {book.categories.map(c => c.name) && <Chip label={book.categories.map(c => c.name)} size="small" sx={{ height: 20, fontSize: '0.7rem', backgroundColor: '#FEF3C7', color: brandOrange, fontWeight: 600 }} />}
                         </Box>
                         <Box sx={{ mt: 2 }}>
                           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>

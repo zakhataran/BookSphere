@@ -10,14 +10,14 @@ import org.project.mapper.helper.BookHelper;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring", uses = {BookHelper.class})
+@Mapper(componentModel = "spring", uses = {BookHelper.class, CategoryMapper.class})
 public interface UserBookStatusMapper {
 
     @Mapping(target = "bookId", source = "book.id")
     @Mapping(target = "title", source = "book.title")
     @Mapping(target = "authorFullName", source = "book", qualifiedByName = "toFullAuthorName")
     @Mapping(target = "imageUrl", source = "book.imageUrl")
-    @Mapping(target = "categoryName", source = "book.category.name")
+    @Mapping(target = "categories", source = "book.categories")
     @Mapping(target = "bookMarkPage", source = "bookMarkPage")
     @Mapping(target = "readPercentage", source = "status", qualifiedByName = "calculatePercentage")
     MyLibraryDto toMyLibraryDto(UserBookStatus status);
@@ -28,7 +28,7 @@ public interface UserBookStatusMapper {
     @Mapping(target = "title", source = "book.title")
     @Mapping(target = "authorFullName", source = "book", qualifiedByName = "toFullAuthorName")
     @Mapping(target = "imageUrl", source = "book.imageUrl")
-    @Mapping(target = "categoryName", source = "book.category.name")
+    @Mapping(target = "categories", source = "book.categories")
     @Mapping(target = "readPercentage", source = "status", qualifiedByName = "calculatePercentage")
     ForeignLibraryDto toForeignLibraryDto(UserBookStatus status);
 

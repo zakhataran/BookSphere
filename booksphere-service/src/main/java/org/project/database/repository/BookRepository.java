@@ -15,13 +15,16 @@ import java.util.UUID;
 @Repository
 public interface BookRepository extends JpaRepository<Book, UUID>, JpaSpecificationExecutor<Book> {
 
-    List<Book> findBooksByUserId(UUID userId);
+    @Query(value = "SELECT * FROM book_sphere.book b " +
+            "WHERE b.id NOT IN :excludeIds " +
+            "AND b.embedding IS NOT NULL " +
+            "ORDER BY b.embedding <=> CAST(:vectorStr AS vector) " +
+            "LIMIT :limit",
+            nativeQuery = true)
+    List<Book> findRecommendations(@Param("vectorStr") String vectorStr,
+                                   @Param("excludeIds") List<UUID> excludeIds,
+                                   @Param("limit") int limit);
 
-    @Query("SELECT b FROM Book b WHERE " +
-            "LOWER(b.title) LIKE LOWER(CONCAT('%', :title, '%')) OR " +
-            "LOWER(b.authorFirstName) LIKE LOWER(CONCAT('%', :author, '%')) OR " +
-            "LOWER(b.authorSecondName) LIKE LOWER(CONCAT('%', :author, '%')) OR " +
-            "LOWER(CONCAT(b.authorFirstName, ' ', b.authorSecondName)) LIKE LOWER(CONCAT('%', :author, '%'))")
-    List<Book> searchByTitleOrAuthor(@Param("title")String title, @Param("author") String author);
-
+    @Query("select b.id from Book b where b.embedding is null")
+    List<UUID> findIdsWithoutEmbedding();
 }

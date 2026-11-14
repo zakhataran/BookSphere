@@ -4,6 +4,7 @@ import org.project.exceptions.UserNotFoundException;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -54,10 +55,25 @@ public class SecurityConfig {
                                 "/api/book/my-library",
                                 "/api/book/reading-list",
                                 "/api/book/read-book/*",
-                                "/api/chat/history/*",
-                                "api/borrow/borrowed-books").authenticated()
-                        .requestMatchers("/ws/**").permitAll()
-                        .anyRequest().permitAll())
+                                "/api/book/recomendations",
+                                "/api/book/analyze-file",
+                                "/api/chat/**",
+                                "/api/borrow/**").authenticated()
+                        .requestMatchers("/api/auth/**",
+                                "/api/user/password-reset/**",
+                                "/ws/**",
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html").permitAll()
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/book/search-books",
+                                "/api/book/book-details/*",
+                                "/api/book/recent",
+                                "/api/book/categories",
+                                "/api/book/user-library/*",
+                                "/api/user/*",
+                                "/api/user/search").permitAll()
+                        .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())))
                 .sessionManagement(session -> session.sessionCreationPolicy(STATELESS));

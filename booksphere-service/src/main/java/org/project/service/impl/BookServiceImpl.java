@@ -2,6 +2,7 @@ package org.project.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentInformation;
 import org.apache.pdfbox.rendering.PDFRenderer;
@@ -17,10 +18,12 @@ import org.project.dto.*;
 import org.project.exceptions.*;
 import org.project.mapper.BookMapper;
 import org.project.mapper.UserBookStatusMapper;
+import org.project.service.AiService;
 import org.project.service.BookService;
 import org.project.service.MinioService;
 import org.project.util.BookValidationUtils;
 import org.springframework.cglib.core.Local;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -35,13 +38,15 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.Base64;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class BookServiceImpl implements BookService {
+
+    private static final int MAX_RECOMMENDATIONS = 20;
 
     private final SecurityConfig securityConfig;
     private final UserRepository userRepository;
@@ -53,6 +58,7 @@ public class BookServiceImpl implements BookService {
     private final UserBookStatusMapper userBookStatusMapper;
     private final BookValidationUtils bookValidationUtils;
     private final BorrowRecordRepository borrowRecordRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
@@ -68,16 +74,21 @@ public class BookServiceImpl implements BookService {
         FileMetadataDto fileMetadata = extractMetadataFromPdf(bookUploadDto.file());
         bookValidationUtils.validateBookData(bookUploadDto, fileMetadata);
 
-        Category category = categoryRepository.findById(bookUploadDto.categoryId())
-                .orElseThrow(() -> new CategoryNotFoundException("Invalid category ID"));
+        Set<Long> requestedIds = new LinkedHashSet<>(bookUploadDto.categoryIds());
+        List<Category> categories = categoryRepository.findAllById(requestedIds);
+
+        if (categories.size() != requestedIds.size()) {
+            throw new CategoryNotFoundException("One or more category IDs are invalid");
+        }
 
         Book book = Book.builder()
                 .title(bookUploadDto.title())
                 .authorFirstName(bookUploadDto.authorFirstName())
                 .authorSecondName(bookUploadDto.authorSecondName())
+                .description(StringUtils.trimToNull(bookUploadDto.description()))
                 .numPages(fileMetadata.numPages())
                 .user(user)
-                .category(category)
+                .categories(new LinkedHashSet<>(categories))
                 .build();
 
         bookRepository.save(book);
@@ -101,6 +112,8 @@ public class BookServiceImpl implements BookService {
                 .build();
 
         userBookStatusRepository.save(status);
+
+        eventPublisher.publishEvent(new BookCreatedEvent(book.getId()));
     }
 
     @Override
@@ -295,6 +308,83 @@ public class BookServiceImpl implements BookService {
         }
 
         return new ReadBookDto(book.getBookUrl(), startPage);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<BookSearchDto> getPersonalizedRecommendations(int limit) {
+        int safeLimit = Math.min(Math.max(limit, 1), MAX_RECOMMENDATIONS);
+
+        String userEmail = securityConfig.getSecurityContext();
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        List<UserBookStatus> history = userBookStatusRepository
+                .findTop5ByUserIdAndReadingStatusInOrderByUpdatedAtDesc(user.getId(), List.of(ReadingStatus.FINISHED, ReadingStatus.READING));
+
+        if (history.isEmpty()) {
+            return findRecentBooks(safeLimit);
+        }
+
+        float[] profileVector = buildProfileVector(history);
+
+        if (profileVector == null) {
+            return findRecentBooks(safeLimit);
+        }
+
+        List<UUID> excludeIds = userBookStatusRepository.findBookIdsByUserId(user.getId());
+
+        List<Book> recommended = bookRepository.findRecommendations(
+                toVectorLiteral(profileVector), excludeIds, safeLimit
+        );
+
+        if (recommended.isEmpty()) {
+            return findRecentBooks(safeLimit);
+        }
+
+        return bookMapper.toBookSearchDto(recommended);
+    }
+
+    private float[] buildProfileVector(List<UserBookStatus> history) {
+        float[] sum = new float[Book.EMBEDDING_DIMENSION];
+        int count = 0;
+
+        for (UserBookStatus status : history) {
+            float[] vector = status.getBook().getEmbedding();
+            if (vector != null && vector.length == Book.EMBEDDING_DIMENSION) {
+                for (int i = 0; i < Book.EMBEDDING_DIMENSION; i++) {
+                    sum[i] += vector[i];
+                }
+                count++;
+            }
+        }
+
+        if (count == 0) {
+            return null;
+        }
+
+        for (int i = 0; i < Book.EMBEDDING_DIMENSION; i++) {
+            sum[i] /= count;
+        }
+
+        return sum;
+    }
+
+    private String toVectorLiteral(float[] vector) {
+        StringBuilder sb = new StringBuilder(vector.length * 10).append('[');
+        for (int i = 0; i < vector.length; i++) {
+            if (i > 0) {
+                sb.append(',');
+            }
+            sb.append(vector[i]);
+        }
+
+        return sb.append(']').toString();
+    }
+
+    private List<BookSearchDto> findRecentBooks(int limit) {
+        Pageable pageable = PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "createdAt"));
+        return bookMapper.toBookSearchDto(bookRepository.findAll(pageable).getContent());
     }
 
     private FileMetadataDto extractMetadataFromPdf(MultipartFile file) {

@@ -30,7 +30,7 @@ public class ChatRestController {
     @GetMapping("/history/{recipientId}")
     public ResponseEntity<List<ChatMessageDto>> getChatHistory(@PathVariable UUID recipientId) {
         String email = securityConfig.getSecurityContext();
-        User currentUser = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("User with email " + " not found"));
+        User currentUser = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("User with email " + email + " not found"));
 
         List<ChatMessageDto> history = chatMessagesService.getChatHistory(currentUser.getId(), recipientId);
 

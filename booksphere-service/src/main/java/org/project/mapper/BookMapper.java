@@ -9,11 +9,12 @@ import org.project.mapper.helper.BookHelper;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring", uses = BookHelper.class)
+@Mapper(componentModel = "spring", uses = {BookHelper.class, CategoryMapper.class})
 public interface BookMapper {
 
     @Mapping(source = "id", target = "bookId")
     @Mapping(source = "user.username", target = "uploaderUsername")
+    @Mapping(source = "categories", target = "categories")
     BookSearchDto toBookSearchDto(Book book);
 
     List<BookSearchDto> toBookSearchDto(List<Book> book);
@@ -21,7 +22,8 @@ public interface BookMapper {
     @Mapping(target = "bookId", source = "id")
     @Mapping(target = "title", source = "title")
     @Mapping(target = "authorFullName", source = "book", qualifiedByName = "toFullAuthorName")
-    @Mapping(target = "categoryName", source = "category.name")
+    @Mapping(target = "categories", source = "categories")
+    @Mapping(target = "description", source = "description")
     @Mapping(target = "imageUrl", source = "imageUrl")
     @Mapping(target = "uploaderId", source = "user.id")
     @Mapping(target = "uploaderUsername", source = "user.username")

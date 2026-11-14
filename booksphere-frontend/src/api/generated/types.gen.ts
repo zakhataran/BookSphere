@@ -50,8 +50,17 @@ export type BookUploadDto = {
     title: string;
     authorFirstName: string;
     authorSecondName?: string;
-    categoryId?: number;
+    description?: string;
+    categoryIds: Array<number>;
     file?: Blob | File;
+};
+
+export type AiBookAnalysisResponseDto = {
+    title?: string;
+    authorFirstName?: string;
+    authorSecondName?: string;
+    description?: string;
+    categoryIds?: Array<number>;
 };
 
 export type UserCreateDto = {
@@ -134,12 +143,17 @@ export type BorrowRequestViewDto = {
     createdAt?: string;
 };
 
+export type CategoryReadDto = {
+    categoryId?: number;
+    name?: string;
+};
+
 export type MyLibraryDto = {
     bookId?: string;
     title?: string;
     authorFullName?: string;
     imageUrl?: string;
-    categoryName?: string;
+    categories?: Array<CategoryReadDto>;
     readingStatus?: 'WANT_TO_READ' | 'READING' | 'FINISHED';
     bookMarkPage?: number;
     readPercentage?: number;
@@ -155,7 +169,7 @@ export type ForeignLibraryDto = {
     title?: string;
     authorFullName?: string;
     imageUrl?: string;
-    categoryName?: string;
+    categories?: Array<CategoryReadDto>;
     readingStatus?: 'WANT_TO_READ' | 'READING' | 'FINISHED';
     readPercentage?: number;
 };
@@ -170,7 +184,7 @@ export type BookSearchDto = {
     title?: string;
     author?: string;
     imageUrl?: string;
-    categoryId?: number;
+    categories?: Array<CategoryReadDto>;
     uploaderUsername?: string;
 };
 
@@ -184,16 +198,12 @@ export type ReadBookDto = {
     bookMarkPage?: number;
 };
 
-export type CategoryReadDto = {
-    categoryId?: number;
-    name?: string;
-};
-
 export type BookDetailsDto = {
     bookId?: string;
     title?: string;
     authorFullName?: string;
-    categoryName?: string;
+    categories?: Array<CategoryReadDto>;
+    description?: string;
     imageUrl?: string;
     uploaderId?: string;
     uploaderUsername?: string;
@@ -396,6 +406,24 @@ export type PreviewCoverResponses = {
 
 export type PreviewCoverResponse = PreviewCoverResponses[keyof PreviewCoverResponses];
 
+export type AnalyzeFileData = {
+    body?: {
+        file: Blob | File;
+    };
+    path?: never;
+    query?: never;
+    url: '/api/book/analyze-file';
+};
+
+export type AnalyzeFileResponses = {
+    /**
+     * OK
+     */
+    200: AiBookAnalysisResponseDto;
+};
+
+export type AnalyzeFileResponse = AnalyzeFileResponses[keyof AnalyzeFileResponses];
+
 export type RegistrationData = {
     body: UserCreateDto;
     path?: never;
@@ -405,9 +433,9 @@ export type RegistrationData = {
 
 export type RegistrationResponses = {
     /**
-     * Created
+     * OK
      */
-    201: UserReadDto;
+    200: UserReadDto;
 };
 
 export type RegistrationResponse = RegistrationResponses[keyof RegistrationResponses];
@@ -676,6 +704,24 @@ export type GetBooksResponses = {
 };
 
 export type GetBooksResponse = GetBooksResponses[keyof GetBooksResponses];
+
+export type GetRecommendationsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        limit?: number;
+    };
+    url: '/api/book/recomendations';
+};
+
+export type GetRecommendationsResponses = {
+    /**
+     * OK
+     */
+    200: Array<BookSearchDto>;
+};
+
+export type GetRecommendationsResponse = GetRecommendationsResponses[keyof GetRecommendationsResponses];
 
 export type GetRecentBooksData = {
     body?: never;

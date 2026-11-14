@@ -1,6 +1,7 @@
 package org.project.database.specification;
 
 import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import org.apache.commons.lang3.StringUtils;
 import org.project.database.entity.Book;
@@ -32,7 +33,9 @@ public class BookSpecifications {
                 return criteriaBuilder.conjunction();
             }
 
-            Join<Book, Category> categoryJoin = root.join("category");
+//            Join<Book, Category> categoryJoin = root.join("category");
+            query.distinct(true);
+            Join<Book, Category> categoryJoin = root.join("categories", JoinType.INNER);
             return categoryJoin.get("id").in(categoryIds);
         };
     }

@@ -2,6 +2,20 @@ server:
   port: 8081
 
 spring:
+  ai:
+    openai:
+      base-url: https://generativelanguage.googleapis.com
+      api-key: ${GEMINI_API_KEY:}
+      chat:
+        completions-path: /v1beta/openai/chat/completions
+        options:
+          model: gemini-3.6-flash
+      embedding:
+        embeddings-path: /v1beta/openai/embeddings
+        options:
+          model: gemini-embedding-2
+          dimensions: 768
+
   flyway:
     enabled: true
     create-schema: true
@@ -36,21 +50,21 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: ${KEYCLOAK_ISSUER_UEL:http://localhost:8080/realms/BookSphere}
+          issuer-uri: ${KEYCLOAK_ISSUER_URL:http://localhost:8080/realms/BookSphere}
           jwk-set-uri: ${KEYCLOAK_JWK_URI:http://localhost:8080/realms/BookSphere/protocol/openid-connect/certs}
 
   keycloak:
     rest:
       realm: BookSphere
       client-id: booksphere-rest-api
-      client-secret: ${KEYCLOAK_CLIENT_SECRET:7OJNdX4lOrI70qv3BnzRGDHxWLx2LipV}
+      client-secret: ${KEYCLOAK_CLIENT_SECRET:}
       token-uri: ${KEYCLOAK_URL:http://localhost:8080}
 
   mail:
     host: smtp.gmail.com
     port: 587
-    username: ${MAIL_USERNAME:book.sphere.api@gmail.com}
-    password: ${MAIL_PASSWORD:wwso vcoa rpsy akew}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
     properties:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
@@ -71,3 +85,6 @@ book:
   upload:
     min-size: 1MB
     max-size: 100MB
+
+ai:
+  backfill-embeddings-on-startup: false

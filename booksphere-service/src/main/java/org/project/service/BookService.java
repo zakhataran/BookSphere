@@ -4,6 +4,7 @@ import org.project.dto.filter.BookFilter;
 import org.project.dto.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface BookService {
@@ -29,4 +30,6 @@ public interface BookService {
     void markAsReading(UUID bookId);
 
     ReadBookDto readBook(UUID bookId);
+
+    List<BookSearchDto> getPersonalizedRecommendations(int limit);
 }

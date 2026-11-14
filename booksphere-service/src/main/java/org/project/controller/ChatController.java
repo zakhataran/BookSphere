@@ -33,7 +33,7 @@ public class ChatController {
 
         log.info("Received message from {} to {}", senderId, safeMessage);
 
-        ChatMessageDto savedMessage = chatMessagesService.saveMessage(chatMessage);
+        ChatMessageDto savedMessage = chatMessagesService.saveMessage(safeMessage);
 
         messagingTemplate.convertAndSendToUser(
                 savedMessage.recipientId().toString(),

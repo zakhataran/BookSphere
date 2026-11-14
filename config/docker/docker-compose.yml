@@ -1,7 +1,7 @@
 name: BookSphere
 services:
   book-sphere-data-base:
-    image: postgres:16.1
+    image: pgvector/pgvector:pg16
     container_name: book-sphere-data-base
     ports:
       - "5433:5432"
@@ -31,7 +31,7 @@ services:
       KC_DB_USERNAME: "postgres"
       KC_DB_PASSWORD: "postgres"
       KC_DB_URL: "jdbc:postgresql://book-sphere-data-base:5432/booksphere"
-      KC_ADMIN_URL: "http://127.0.0.1:8080"
+      KC_ADMIN_URL: "http://localhost:8080"
       KC_DB_SCHEMA: keycloak_schema
     volumes:
       - ../keycloak-config:/opt/keycloak/data/import
@@ -72,38 +72,38 @@ services:
     networks:
       - BookSphere
 
-  booksphere-backend:
-    build:
-      context: ../../booksphere-service
-    container_name: booksphere-backend
-    ports:
-      - "8081:8081"
-    environment:
-      - DB_HOST=book-sphere-data-base
-      - DB_PORT=5432
-      - REDIS_HOST=redis
-      - MINIO_URL=http://minio:9000
-      - KEYCLOAK_URL=http://keycloak:8080
-      - KEYCLOAK_ISSUER_URL=http://localhost:8080
-      - KEYCLOAK_JWK_URI=http://keycloak:8080/realms/BookSphere/protocol/openid-connect/certs
-    depends_on:
-      - book-sphere-data-base
-      - keycloak
-      - redis
-      - minio
-    networks:
-      - BookSphere
-
-  booksphere-frontend:
-    build:
-      context: ../../booksphere-frontend
-    container_name: booksphere-frontend
-    ports:
-      - "3000:80"
-    depends_on:
-      - booksphere-backend
-    networks:
-      - BookSphere
+#  booksphere-backend:
+#    build:
+#      context: ../../booksphere-service
+#    container_name: booksphere-backend
+#    ports:
+#      - "8081:8081"
+#    environment:
+#      - DB_HOST=book-sphere-data-base
+#      - DB_PORT=5432
+#      - REDIS_HOST=redis
+#      - MINIO_URL=http://minio:9000
+#      - KEYCLOAK_URL=http://keycloak:8080
+#      - KEYCLOAK_ISSUER_URL=http://localhost:8080
+#      - KEYCLOAK_JWK_URI=http://keycloak:8080/realms/BookSphere/protocol/openid-connect/certs
+#    depends_on:
+#      - book-sphere-data-base
+#      - keycloak
+#      - redis
+#      - minio
+#    networks:
+#      - BookSphere
+#
+#  booksphere-frontend:
+#    build:
+#      context: ../../booksphere-frontend
+#    container_name: booksphere-frontend
+#    ports:
+#      - "3000:80"
+#    depends_on:
+#      - booksphere-backend
+#    networks:
+#      - BookSphere
 
 volumes:
   consul_data:

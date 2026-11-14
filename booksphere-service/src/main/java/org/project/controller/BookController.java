@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.project.dto.filter.BookFilter;
 import org.project.dto.*;
+import org.project.service.AiService;
 import org.project.service.BookService;
 import org.project.service.CategoryService;
 import org.springdoc.core.annotations.ParameterObject;
@@ -24,11 +25,17 @@ public class BookController {
 
     private final BookService bookService;
     private final CategoryService categoryService;
+    private final AiService aiService;
 
     @PostMapping(value = "/upload-book", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public void uploadBook(@ModelAttribute @Valid BookUploadDto bookUploadDto) {
         bookService.uploadBook(bookUploadDto);
+    }
+
+    @PostMapping(value = "/analyze-file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<AiBookAnalysisResponseDto> analyzeFile(@RequestParam("file") MultipartFile file){
+        return ResponseEntity.ok(aiService.analyzeBookPdf(file));
     }
 
     @PostMapping(value = "/preview-cover", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -99,5 +106,10 @@ public class BookController {
     @GetMapping("/categories")
     public ResponseEntity<List<CategoryReadDto>> getAllCategories() {
         return ResponseEntity.ok(categoryService.getAllCategories());
+    }
+
+    @GetMapping("/recomendations")
+    public ResponseEntity<List<BookSearchDto>> getRecommendations(@RequestParam(name = "limit", defaultValue = "5") int limit) {
+        return ResponseEntity.ok(bookService.getPersonalizedRecommendations(limit));
     }
 }

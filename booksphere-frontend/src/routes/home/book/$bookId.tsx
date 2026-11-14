@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate, useRouter } from '@tanstack/react-router';
 import {
-  Box, Typography, Button, Container, IconButton, Avatar, 
+  Box, Typography, Button, Container, IconButton, Avatar,
   Dialog, DialogTitle, DialogContent, DialogActions, Select, MenuItem, FormControl, InputLabel
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -16,14 +16,14 @@ export const Route = createFileRoute('/home/book/$bookId')({
   loader: async ({ params }) => {
     const token = localStorage.getItem('bookSphere_token');
     const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
-    
+
     const [bookRes, profileRes] = await Promise.all([
       getBookDetails({ path: { bookId: params.bookId } }),
       getPersonalProfile({ headers })
     ]);
 
     if (bookRes.error || !bookRes.data) throw new Error('Book not found');
-    
+
     return { book: bookRes.data, currentUser: profileRes.data };
   },
   component: BookDetailsPage,
@@ -44,7 +44,7 @@ function BookDetailsPage() {
   const isOwner = String(book.uploaderId) === String(currentUser?.id);
 
   useEffect(() => {
-    if (isOwner) return; 
+    if (isOwner) return;
 
     const token = localStorage.getItem('bookSphere_token');
     const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
@@ -65,7 +65,7 @@ function BookDetailsPage() {
       const res = await requestBook({
         headers,
         path: { bookId },
-        body: { requestDays: requestedDays } // Убедитесь, что тут совпадает с вашим DTO
+        body: { requestDays: requestedDays }
       });
 
       if (res.data) {
@@ -88,8 +88,6 @@ function BookDetailsPage() {
         headers,
         path: { bookId: book.bookId! }
       });
-
-      console.log("Read book response:", res.data);
 
       const fileUrl = res.data?.bookUrl || (res.data as any)?.fileUrl || (res.data as any)?.url;
 
@@ -130,8 +128,8 @@ function BookDetailsPage() {
     }
 
     if (borrowStatus.status === 'APPROVED') {
-      const daysLeft = borrowStatus.expiresAt 
-        ? Math.max(0, Math.ceil((new Date(borrowStatus.expiresAt).getTime() - new Date().getTime()) / (1000 * 3600 * 24))) 
+      const daysLeft = borrowStatus.expiresAt
+        ? Math.max(0, Math.ceil((new Date(borrowStatus.expiresAt).getTime() - new Date().getTime()) / (1000 * 3600 * 24)))
         : 0;
 
       return (
@@ -173,9 +171,18 @@ function BookDetailsPage() {
           <Box sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
             <Typography variant="h4" sx={{ fontWeight: 800, color: '#111827', mb: 1 }}>{book.title}</Typography>
             <Typography variant="h6" sx={{ color: '#6B7280', mb: 2 }}>{book.authorFullName}</Typography>
-            <Typography variant="body2" sx={{ color: brandOrange, fontWeight: 600, mb: 'auto' }}>Category: {book.categoryName}</Typography>
+            <Typography variant="body2" sx={{ color: brandOrange, fontWeight: 600 }}>Category: {book.categories?.map(c => c.name).join(', ')}</Typography>
 
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 4, pt: 3, borderTop: '1px solid #F3F4F6' }}>
+            {book.description && (
+              <Box sx={{ mt: 3, mb: 1 }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#374151', mb: 1 }}>Description</Typography>
+                <Typography variant="body2" sx={{ color: '#4B5563', lineHeight: 1.6 }}>
+                  {book.description}
+                </Typography>
+              </Box>
+            )}
+
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 'auto', pt: 3, borderTop: '1px solid #F3F4F6' }}>
               <Avatar src={book.uploaderAvatarUrl} sx={{ width: 40, height: 40 }} />
               <Box>
                 <Typography variant="caption" sx={{ color: '#9CA3AF' }}>Owner</Typography>
