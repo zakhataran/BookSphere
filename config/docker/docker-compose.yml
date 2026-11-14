@@ -72,39 +72,6 @@ services:
     networks:
       - BookSphere
 
-#  booksphere-backend:
-#    build:
-#      context: ../../booksphere-service
-#    container_name: booksphere-backend
-#    ports:
-#      - "8081:8081"
-#    environment:
-#      - DB_HOST=book-sphere-data-base
-#      - DB_PORT=5432
-#      - REDIS_HOST=redis
-#      - MINIO_URL=http://minio:9000
-#      - KEYCLOAK_URL=http://keycloak:8080
-#      - KEYCLOAK_ISSUER_URL=http://localhost:8080
-#      - KEYCLOAK_JWK_URI=http://keycloak:8080/realms/BookSphere/protocol/openid-connect/certs
-#    depends_on:
-#      - book-sphere-data-base
-#      - keycloak
-#      - redis
-#      - minio
-#    networks:
-#      - BookSphere
-#
-#  booksphere-frontend:
-#    build:
-#      context: ../../booksphere-frontend
-#    container_name: booksphere-frontend
-#    ports:
-#      - "3000:80"
-#    depends_on:
-#      - booksphere-backend
-#    networks:
-#      - BookSphere
-
 volumes:
   consul_data:
     driver: local
